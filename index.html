@@ -946,7 +946,7 @@ function senPopup(s){const ev=curEv(),v=senEv(s,ev);
 
 function initMap(){
   MAP=L.map('lmap',{zoomControl:true,scrollWheelZoom:false,tap:true}).setView([-5.20,-80.60],10);
-  const street=L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{maxZoom:18,attribution:'© OpenStreetMap · © CARTO'});
+  const street=L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'});
   const sat=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:18,attribution:'Imágenes © Esri'});
   street.addTo(MAP);
   let fell=false; street.on('tileerror',()=>{ if(fell) return; fell=true; // sin acceso a mosaicos: dibujar los distritos
