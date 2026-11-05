@@ -89,7 +89,6 @@ section{display:grid;gap:14px}
 .mapgrid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:16px;align-items:start}
 @media (max-width:860px){.mapgrid{grid-template-columns:minmax(0,1fr)}}
 .mapbox{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:10px;min-width:0}
-.mapbox svg{display:block;width:100%;height:auto}
 .seg{display:flex;flex-wrap:wrap;gap:6px}
 .seg button{font:600 14px/1 var(--f-body);padding:8px 12px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
 .seg button[aria-pressed="true"]{background:var(--rain);border-color:var(--rain);color:var(--surface)}
@@ -134,6 +133,698 @@ table.cmp tr.grp td{background:var(--bg);font-weight:700;font-family:var(--f-dis
 .liters p{margin:0;max-width:70ch}
 footer{font-size:13px;color:var(--muted)}
 footer a{color:var(--rain)}
+/* required styles */
+
+.leaflet-pane,
+.leaflet-tile,
+.leaflet-marker-icon,
+.leaflet-marker-shadow,
+.leaflet-tile-container,
+.leaflet-pane > svg,
+.leaflet-pane > canvas,
+.leaflet-zoom-box,
+.leaflet-image-layer,
+.leaflet-layer {
+	position: absolute;
+	left: 0;
+	top: 0;
+	}
+.leaflet-container {
+	overflow: hidden;
+	}
+.leaflet-tile,
+.leaflet-marker-icon,
+.leaflet-marker-shadow {
+	-webkit-user-select: none;
+	   -moz-user-select: none;
+	        user-select: none;
+	  -webkit-user-drag: none;
+	}
+/* Prevents IE11 from highlighting tiles in blue */
+.leaflet-tile::selection {
+	background: transparent;
+}
+/* Safari renders non-retina tile on retina better with this, but Chrome is worse */
+.leaflet-safari .leaflet-tile {
+	image-rendering: -webkit-optimize-contrast;
+	}
+/* hack that prevents hw layers "stretching" when loading new tiles */
+.leaflet-safari .leaflet-tile-container {
+	width: 1600px;
+	height: 1600px;
+	-webkit-transform-origin: 0 0;
+	}
+.leaflet-marker-icon,
+.leaflet-marker-shadow {
+	display: block;
+	}
+/* .leaflet-container svg: reset svg max-width decleration shipped in Joomla! (joomla.org) 3.x */
+/* .leaflet-container img: map is broken in FF if you have max-width: 100% on tiles */
+.leaflet-container .leaflet-overlay-pane svg {
+	max-width: none !important;
+	max-height: none !important;
+	}
+.leaflet-container .leaflet-marker-pane img,
+.leaflet-container .leaflet-shadow-pane img,
+.leaflet-container .leaflet-tile-pane img,
+.leaflet-container img.leaflet-image-layer,
+.leaflet-container .leaflet-tile {
+	max-width: none !important;
+	max-height: none !important;
+	width: auto;
+	padding: 0;
+	}
+
+.leaflet-container img.leaflet-tile {
+	/* See: https://bugs.chromium.org/p/chromium/issues/detail?id=600120 */
+	mix-blend-mode: plus-lighter;
+}
+
+.leaflet-container.leaflet-touch-zoom {
+	-ms-touch-action: pan-x pan-y;
+	touch-action: pan-x pan-y;
+	}
+.leaflet-container.leaflet-touch-drag {
+	-ms-touch-action: pinch-zoom;
+	/* Fallback for FF which doesn't support pinch-zoom */
+	touch-action: none;
+	touch-action: pinch-zoom;
+}
+.leaflet-container.leaflet-touch-drag.leaflet-touch-zoom {
+	-ms-touch-action: none;
+	touch-action: none;
+}
+.leaflet-container {
+	-webkit-tap-highlight-color: transparent;
+}
+.leaflet-container a {
+	-webkit-tap-highlight-color: rgba(51, 181, 229, 0.4);
+}
+.leaflet-tile {
+	filter: inherit;
+	visibility: hidden;
+	}
+.leaflet-tile-loaded {
+	visibility: inherit;
+	}
+.leaflet-zoom-box {
+	width: 0;
+	height: 0;
+	-moz-box-sizing: border-box;
+	     box-sizing: border-box;
+	z-index: 800;
+	}
+/* workaround for https://bugzilla.mozilla.org/show_bug.cgi?id=888319 */
+.leaflet-overlay-pane svg {
+	-moz-user-select: none;
+	}
+
+.leaflet-pane         { z-index: 400; }
+
+.leaflet-tile-pane    { z-index: 200; }
+.leaflet-overlay-pane { z-index: 400; }
+.leaflet-shadow-pane  { z-index: 500; }
+.leaflet-marker-pane  { z-index: 600; }
+.leaflet-tooltip-pane   { z-index: 650; }
+.leaflet-popup-pane   { z-index: 700; }
+
+.leaflet-map-pane canvas { z-index: 100; }
+.leaflet-map-pane svg    { z-index: 200; }
+
+.leaflet-vml-shape {
+	width: 1px;
+	height: 1px;
+	}
+.lvml {
+	behavior: url(#default#VML);
+	display: inline-block;
+	position: absolute;
+	}
+
+
+/* control positioning */
+
+.leaflet-control {
+	position: relative;
+	z-index: 800;
+	pointer-events: visiblePainted; /* IE 9-10 doesn't have auto */
+	pointer-events: auto;
+	}
+.leaflet-top,
+.leaflet-bottom {
+	position: absolute;
+	z-index: 1000;
+	pointer-events: none;
+	}
+.leaflet-top {
+	top: 0;
+	}
+.leaflet-right {
+	right: 0;
+	}
+.leaflet-bottom {
+	bottom: 0;
+	}
+.leaflet-left {
+	left: 0;
+	}
+.leaflet-control {
+	float: left;
+	clear: both;
+	}
+.leaflet-right .leaflet-control {
+	float: right;
+	}
+.leaflet-top .leaflet-control {
+	margin-top: 10px;
+	}
+.leaflet-bottom .leaflet-control {
+	margin-bottom: 10px;
+	}
+.leaflet-left .leaflet-control {
+	margin-left: 10px;
+	}
+.leaflet-right .leaflet-control {
+	margin-right: 10px;
+	}
+
+
+/* zoom and fade animations */
+
+.leaflet-fade-anim .leaflet-popup {
+	opacity: 0;
+	-webkit-transition: opacity 0.2s linear;
+	   -moz-transition: opacity 0.2s linear;
+	        transition: opacity 0.2s linear;
+	}
+.leaflet-fade-anim .leaflet-map-pane .leaflet-popup {
+	opacity: 1;
+	}
+.leaflet-zoom-animated {
+	-webkit-transform-origin: 0 0;
+	    -ms-transform-origin: 0 0;
+	        transform-origin: 0 0;
+	}
+svg.leaflet-zoom-animated {
+	will-change: transform;
+}
+
+.leaflet-zoom-anim .leaflet-zoom-animated {
+	-webkit-transition: -webkit-transform 0.25s cubic-bezier(0,0,0.25,1);
+	   -moz-transition:    -moz-transform 0.25s cubic-bezier(0,0,0.25,1);
+	        transition:         transform 0.25s cubic-bezier(0,0,0.25,1);
+	}
+.leaflet-zoom-anim .leaflet-tile,
+.leaflet-pan-anim .leaflet-tile {
+	-webkit-transition: none;
+	   -moz-transition: none;
+	        transition: none;
+	}
+
+.leaflet-zoom-anim .leaflet-zoom-hide {
+	visibility: hidden;
+	}
+
+
+/* cursors */
+
+.leaflet-interactive {
+	cursor: pointer;
+	}
+.leaflet-grab {
+	cursor: -webkit-grab;
+	cursor:    -moz-grab;
+	cursor:         grab;
+	}
+.leaflet-crosshair,
+.leaflet-crosshair .leaflet-interactive {
+	cursor: crosshair;
+	}
+.leaflet-popup-pane,
+.leaflet-control {
+	cursor: auto;
+	}
+.leaflet-dragging .leaflet-grab,
+.leaflet-dragging .leaflet-grab .leaflet-interactive,
+.leaflet-dragging .leaflet-marker-draggable {
+	cursor: move;
+	cursor: -webkit-grabbing;
+	cursor:    -moz-grabbing;
+	cursor:         grabbing;
+	}
+
+/* marker & overlays interactivity */
+.leaflet-marker-icon,
+.leaflet-marker-shadow,
+.leaflet-image-layer,
+.leaflet-pane > svg path,
+.leaflet-tile-container {
+	pointer-events: none;
+	}
+
+.leaflet-marker-icon.leaflet-interactive,
+.leaflet-image-layer.leaflet-interactive,
+.leaflet-pane > svg path.leaflet-interactive,
+svg.leaflet-image-layer.leaflet-interactive path {
+	pointer-events: visiblePainted; /* IE 9-10 doesn't have auto */
+	pointer-events: auto;
+	}
+
+/* visual tweaks */
+
+.leaflet-container {
+	background: #ddd;
+	outline-offset: 1px;
+	}
+.leaflet-container a {
+	color: #0078A8;
+	}
+.leaflet-zoom-box {
+	border: 2px dotted #38f;
+	background: rgba(255,255,255,0.5);
+	}
+
+
+/* general typography */
+.leaflet-container {
+	font-family: "Helvetica Neue", Arial, Helvetica, sans-serif;
+	font-size: 12px;
+	font-size: 0.75rem;
+	line-height: 1.5;
+	}
+
+
+/* general toolbar styles */
+
+.leaflet-bar {
+	box-shadow: 0 1px 5px rgba(0,0,0,0.65);
+	border-radius: 4px;
+	}
+.leaflet-bar a {
+	background-color: #fff;
+	border-bottom: 1px solid #ccc;
+	width: 26px;
+	height: 26px;
+	line-height: 26px;
+	display: block;
+	text-align: center;
+	text-decoration: none;
+	color: black;
+	}
+.leaflet-bar a,
+.leaflet-control-layers-toggle {
+	background-position: 50% 50%;
+	background-repeat: no-repeat;
+	display: block;
+	}
+.leaflet-bar a:hover,
+.leaflet-bar a:focus {
+	background-color: #f4f4f4;
+	}
+.leaflet-bar a:first-child {
+	border-top-left-radius: 4px;
+	border-top-right-radius: 4px;
+	}
+.leaflet-bar a:last-child {
+	border-bottom-left-radius: 4px;
+	border-bottom-right-radius: 4px;
+	border-bottom: none;
+	}
+.leaflet-bar a.leaflet-disabled {
+	cursor: default;
+	background-color: #f4f4f4;
+	color: #bbb;
+	}
+
+.leaflet-touch .leaflet-bar a {
+	width: 30px;
+	height: 30px;
+	line-height: 30px;
+	}
+.leaflet-touch .leaflet-bar a:first-child {
+	border-top-left-radius: 2px;
+	border-top-right-radius: 2px;
+	}
+.leaflet-touch .leaflet-bar a:last-child {
+	border-bottom-left-radius: 2px;
+	border-bottom-right-radius: 2px;
+	}
+
+/* zoom control */
+
+.leaflet-control-zoom-in,
+.leaflet-control-zoom-out {
+	font: bold 18px 'Lucida Console', Monaco, monospace;
+	text-indent: 1px;
+	}
+
+.leaflet-touch .leaflet-control-zoom-in, .leaflet-touch .leaflet-control-zoom-out  {
+	font-size: 22px;
+	}
+
+
+/* layers control */
+
+.leaflet-control-layers {
+	box-shadow: 0 1px 5px rgba(0,0,0,0.4);
+	background: #fff;
+	border-radius: 5px;
+	}
+.leaflet-control-layers-toggle {
+	background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABoAAAAaCAQAAAADQ4RFAAACf0lEQVR4AY1UM3gkARTePdvdoTxXKc+qTl3aU5U6b2Kbkz3Gtq3Zw6ziLGNPzrYx7946Tr6/ee/XeCQ4D3ykPtL5tHno4n0d/h3+xfuWHGLX81cn7r0iTNzjr7LrlxCqPtkbTQEHeqOrTy4Yyt3VCi/IOB0v7rVC7q45Q3Gr5K6jt+3Gl5nCoDD4MtO+j96Wu8atmhGqcNGHObuf8OM/x3AMx38+4Z2sPqzCxRFK2aF2e5Jol56XTLyggAMTL56XOMoS1W4pOyjUcGGQdZxU6qRh7B9Zp+PfpOFlqt0zyDZckPi1ttmIp03jX8gyJ8a/PG2yutpS/Vol7peZIbZcKBAEEheEIAgFbDkz5H6Zrkm2hVWGiXKiF4Ycw0RWKdtC16Q7qe3X4iOMxruonzegJzWaXFrU9utOSsLUmrc0YjeWYjCW4PDMADElpJSSQ0vQvA1Tm6/JlKnqFs1EGyZiFCqnRZTEJJJiKRYzVYzJck2Rm6P4iH+cmSY0YzimYa8l0EtTODFWhcMIMVqdsI2uiTvKmTisIDHJ3od5GILVhBCarCfVRmo4uTjkhrhzkiBV7SsaqS+TzrzM1qpGGUFt28pIySQHR6h7F6KSwGWm97ay+Z+ZqMcEjEWebE7wxCSQwpkhJqoZA5ivCdZDjJepuJ9IQjGGUmuXJdBFUygxVqVsxFsLMbDe8ZbDYVCGKxs+W080max1hFCarCfV+C1KATwcnvE9gRRuMP2prdbWGowm1KB1y+zwMMENkM755cJ2yPDtqhTI6ED1M/82yIDtC/4j4BijjeObflpO9I9MwXTCsSX8jWAFeHr05WoLTJ5G8IQVS/7vwR6ohirYM7f6HzYpogfS3R2OAAAAAElFTkSuQmCC);
+	width: 36px;
+	height: 36px;
+	}
+.leaflet-retina .leaflet-control-layers-toggle {
+	background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADQAAAA0CAQAAABvcdNgAAAEsklEQVR4AWL4TydIhpZK1kpWOlg0w3ZXP6D2soBtG42jeI6ZmQTHzAxiTbSJsYLjO9HhP+WOmcuhciVnmHVQcJnp7DFvScowZorad/+V/fVzMdMT2g9Cv9guXGv/7pYOrXh2U+RRR3dSd9JRx6bIFc/ekqHI29JC6pJ5ZEh1yWkhkbcFeSjxgx3L2m1cb1C7bceyxA+CNjT/Ifff+/kDk2u/w/33/IeCMOSaWZ4glosqT3DNnNZQ7Cs58/3Ce5HL78iZH/vKVIaYlqzfdLu8Vi7dnvUbEza5Idt36tquZFldl6N5Z/POLof0XLK61mZCmJSWjVF9tEjUluu74IUXvgttuVIHE7YxSkaYhJZam7yiM9Pv82JYfl9nptxZaxMJE4YSPty+vF0+Y2up9d3wwijfjZbabqm/3bZ9ecKHsiGmRflnn1MW4pjHf9oLufyn2z3y1D6n8g8TZhxyzipLNPnAUpsOiuWimg52psrTZYnOWYNDTMuWBWa0tJb4rgq1UvmutpaYEbZlwU3CLJm/ayYjHW5/h7xWLn9Hh1vepDkyf7dE7MtT5LR4e7yYpHrkhOUpEfssBLq2pPhAqoSWKUkk7EDqkmK6RrCEzqDjhNDWNE+XSMvkJRDWlZTmCW0l0PHQGRZY5t1L83kT0Y3l2SItk5JAWHl2dCOBm+fPu3fo5/3v61RMCO9Jx2EEYYhb0rmNQMX/vm7gqOEJLcXTGw3CAuRNeyaPWwjR8PRqKQ1PDA/dpv+on9Shox52WFnx0KY8onHayrJzm87i5h9xGw/tfkev0jGsQizqezUKjk12hBMKJ4kbCqGPVNXudyyrShovGw5CgxsRICxF6aRmSjlBnHRzg7Gx8fKqEubI2rahQYdR1YgDIRQO7JvQyD52hoIQx0mxa0ODtW2Iozn1le2iIRdzwWewedyZzewidueOGqlsn1MvcnQpuVwLGG3/IR1hIKxCjelIDZ8ldqWz25jWAsnldEnK0Zxro19TGVb2ffIZEsIO89EIEDvKMPrzmBOQcKQ+rroye6NgRRxqR4U8EAkz0CL6uSGOm6KQCdWjvjRiSP1BPalCRS5iQYiEIvxuBMJEWgzSoHADcVMuN7IuqqTeyUPq22qFimFtxDyBBJEwNyt6TM88blFHao/6tWWhuuOM4SAK4EI4QmFHA+SEyWlp4EQoJ13cYGzMu7yszEIBOm2rVmHUNqwAIQabISNMRstmdhNWcFLsSm+0tjJH1MdRxO5Nx0WDMhCtgD6OKgZeljJqJKc9po8juskR9XN0Y1lZ3mWjLR9JCO1jRDMd0fpYC2VnvjBSEFg7wBENc0R9HFlb0xvF1+TBEpF68d+DHR6IOWVv2BECtxo46hOFUBd/APU57WIoEwJhIi2CdpyZX0m93BZicktMj1AS9dClteUFAUNUIEygRZCtik5zSxI9MubTBH1GOiHsiLJ3OCoSZkILa9PxiN0EbvhsAo8tdAf9Seepd36lGWHmtNANTv5Jd0z4QYyeo/UEJqxKRpg5LZx6btLPsOaEmdMyxYdlc8LMaJnikDlhclqmPiQnTEpLUIZEwkRagjYkEibQErwhkTAKCLQEbUgkzJQWc/0PstHHcfEdQ+UAAAAASUVORK5CYII=);
+	background-size: 26px 26px;
+	}
+.leaflet-touch .leaflet-control-layers-toggle {
+	width: 44px;
+	height: 44px;
+	}
+.leaflet-control-layers .leaflet-control-layers-list,
+.leaflet-control-layers-expanded .leaflet-control-layers-toggle {
+	display: none;
+	}
+.leaflet-control-layers-expanded .leaflet-control-layers-list {
+	display: block;
+	position: relative;
+	}
+.leaflet-control-layers-expanded {
+	padding: 6px 10px 6px 6px;
+	color: #333;
+	background: #fff;
+	}
+.leaflet-control-layers-scrollbar {
+	overflow-y: scroll;
+	overflow-x: hidden;
+	padding-right: 5px;
+	}
+.leaflet-control-layers-selector {
+	margin-top: 2px;
+	position: relative;
+	top: 1px;
+	}
+.leaflet-control-layers label {
+	display: block;
+	font-size: 13px;
+	font-size: 1.08333em;
+	}
+.leaflet-control-layers-separator {
+	height: 0;
+	border-top: 1px solid #ddd;
+	margin: 5px -10px 5px -6px;
+	}
+
+/* Default icon URLs */
+.leaflet-default-icon-path { /* used only in path-guessing heuristic, see L.Icon.Default */
+	background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABkAAAApCAYAAADAk4LOAAAFgUlEQVR4Aa1XA5BjWRTN2oW17d3YaZtr2962HUzbDNpjszW24mRt28p47v7zq/bXZtrp/lWnXr337j3nPCe85NcypgSFdugCpW5YoDAMRaIMqRi6aKq5E3YqDQO3qAwjVWrD8Ncq/RBpykd8oZUb/kaJutow8r1aP9II0WmLKLIsJyv1w/kqw9Ch2MYdB++12Onxee/QMwvf4/Dk/Lfp/i4nxTXtOoQ4pW5Aj7wpici1A9erdAN2OH64x8OSP9j3Ft3b7aWkTg/Fm91siTra0f9on5sQr9INejH6CUUUpavjFNq1B+Oadhxmnfa8RfEmN8VNAsQhPqF55xHkMzz3jSmChWU6f7/XZKNH+9+hBLOHYozuKQPxyMPUKkrX/K0uWnfFaJGS1QPRtZsOPtr3NsW0uyh6NNCOkU3Yz+bXbT3I8G3xE5EXLXtCXbbqwCO9zPQYPRTZ5vIDXD7U+w7rFDEoUUf7ibHIR4y6bLVPXrz8JVZEql13trxwue/uDivd3fkWRbS6/IA2bID4uk0UpF1N8qLlbBlXs4Ee7HLTfV1j54APvODnSfOWBqtKVvjgLKzF5YdEk5ewRkGlK0i33Eofffc7HT56jD7/6U+qH3Cx7SBLNntH5YIPvODnyfIXZYRVDPqgHtLs5ABHD3YzLuespb7t79FY34DjMwrVrcTuwlT55YMPvOBnRrJ4VXTdNnYug5ucHLBjEpt30701A3Ts+HEa73u6dT3FNWwflY86eMHPk+Yu+i6pzUpRrW7SNDg5JHR4KapmM5Wv2E8Tfcb1HoqqHMHU+uWDD7zg54mz5/2BSnizi9T1Dg4QQXLToGNCkb6tb1NU+QAlGr1++eADrzhn/u8Q2YZhQVlZ5+CAOtqfbhmaUCS1ezNFVm2imDbPmPng5wmz+gwh+oHDce0eUtQ6OGDIyR0uUhUsoO3vfDmmgOezH0mZN59x7MBi++WDL1g/eEiU3avlidO671bkLfwbw5XV2P8Pzo0ydy4t2/0eu33xYSOMOD8hTf4CrBtGMSoXfPLchX+J0ruSePw3LZeK0juPJbYzrhkH0io7B3k164hiGvawhOKMLkrQLyVpZg8rHFW7E2uHOL888IBPlNZ1FPzstSJM694fWr6RwpvcJK60+0HCILTBzZLFNdtAzJaohze60T8qBzyh5ZuOg5e7uwQppofEmf2++DYvmySqGBuKaicF1blQjhuHdvCIMvp8whTTfZzI7RldpwtSzL+F1+wkdZ2TBOW2gIF88PBTzD/gpeREAMEbxnJcaJHNHrpzji0gQCS6hdkEeYt9DF/2qPcEC8RM28Hwmr3sdNyht00byAut2k3gufWNtgtOEOFGUwcXWNDbdNbpgBGxEvKkOQsxivJx33iow0Vw5S6SVTrpVq11ysA2Rp7gTfPfktc6zhtXBBC+adRLshf6sG2RfHPZ5EAc4sVZ83yCN00Fk/4kggu40ZTvIEm5g24qtU4KjBrx/BTTH8ifVASAG7gKrnWxJDcU7x8X6Ecczhm3o6YicvsLXWfh3Ch1W0k8x0nXF+0fFxgt4phz8QvypiwCCFKMqXCnqXExjq10beH+UUA7+nG6mdG/Pu0f3LgFcGrl2s0kNNjpmoJ9o4B29CMO8dMT4Q5ox8uitF6fqsrJOr8qnwNbRzv6hSnG5wP+64C7h9lp30hKNtKdWjtdkbuPA19nJ7Tz3zR/ibgARbhb4AlhavcBebmTHcFl2fvYEnW0ox9xMxKBS8btJ+KiEbq9zA4RthQXDhPa0T9TEe69gWupwc6uBUphquXgf+/FrIjweHQS4/pduMe5ERUMHUd9xv8ZR98CxkS4F2n3EUrUZ10EYNw7BWm9x1GiPssi3GgiGRDKWRYZfXlON+dfNbM+GgIwYdwAAAAASUVORK5CYII=);
+	}
+
+
+/* attribution and scale controls */
+
+.leaflet-container .leaflet-control-attribution {
+	background: #fff;
+	background: rgba(255, 255, 255, 0.8);
+	margin: 0;
+	}
+.leaflet-control-attribution,
+.leaflet-control-scale-line {
+	padding: 0 5px;
+	color: #333;
+	line-height: 1.4;
+	}
+.leaflet-control-attribution a {
+	text-decoration: none;
+	}
+.leaflet-control-attribution a:hover,
+.leaflet-control-attribution a:focus {
+	text-decoration: underline;
+	}
+.leaflet-attribution-flag {
+	display: inline !important;
+	vertical-align: baseline !important;
+	width: 1em;
+	height: 0.6669em;
+	}
+.leaflet-left .leaflet-control-scale {
+	margin-left: 5px;
+	}
+.leaflet-bottom .leaflet-control-scale {
+	margin-bottom: 5px;
+	}
+.leaflet-control-scale-line {
+	border: 2px solid #777;
+	border-top: none;
+	line-height: 1.1;
+	padding: 2px 5px 1px;
+	white-space: nowrap;
+	-moz-box-sizing: border-box;
+	     box-sizing: border-box;
+	background: rgba(255, 255, 255, 0.8);
+	text-shadow: 1px 1px #fff;
+	}
+.leaflet-control-scale-line:not(:first-child) {
+	border-top: 2px solid #777;
+	border-bottom: none;
+	margin-top: -2px;
+	}
+.leaflet-control-scale-line:not(:first-child):not(:last-child) {
+	border-bottom: 2px solid #777;
+	}
+
+.leaflet-touch .leaflet-control-attribution,
+.leaflet-touch .leaflet-control-layers,
+.leaflet-touch .leaflet-bar {
+	box-shadow: none;
+	}
+.leaflet-touch .leaflet-control-layers,
+.leaflet-touch .leaflet-bar {
+	border: 2px solid rgba(0,0,0,0.2);
+	background-clip: padding-box;
+	}
+
+
+/* popup */
+
+.leaflet-popup {
+	position: absolute;
+	text-align: center;
+	margin-bottom: 20px;
+	}
+.leaflet-popup-content-wrapper {
+	padding: 1px;
+	text-align: left;
+	border-radius: 12px;
+	}
+.leaflet-popup-content {
+	margin: 13px 24px 13px 20px;
+	line-height: 1.3;
+	font-size: 13px;
+	font-size: 1.08333em;
+	min-height: 1px;
+	}
+.leaflet-popup-content p {
+	margin: 17px 0;
+	margin: 1.3em 0;
+	}
+.leaflet-popup-tip-container {
+	width: 40px;
+	height: 20px;
+	position: absolute;
+	left: 50%;
+	margin-top: -1px;
+	margin-left: -20px;
+	overflow: hidden;
+	pointer-events: none;
+	}
+.leaflet-popup-tip {
+	width: 17px;
+	height: 17px;
+	padding: 1px;
+
+	margin: -10px auto 0;
+	pointer-events: auto;
+
+	-webkit-transform: rotate(45deg);
+	   -moz-transform: rotate(45deg);
+	    -ms-transform: rotate(45deg);
+	        transform: rotate(45deg);
+	}
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip {
+	background: white;
+	color: #333;
+	box-shadow: 0 3px 14px rgba(0,0,0,0.4);
+	}
+.leaflet-container a.leaflet-popup-close-button {
+	position: absolute;
+	top: 0;
+	right: 0;
+	border: none;
+	text-align: center;
+	width: 24px;
+	height: 24px;
+	font: 16px/24px Tahoma, Verdana, sans-serif;
+	color: #757575;
+	text-decoration: none;
+	background: transparent;
+	}
+.leaflet-container a.leaflet-popup-close-button:hover,
+.leaflet-container a.leaflet-popup-close-button:focus {
+	color: #585858;
+	}
+.leaflet-popup-scrolled {
+	overflow: auto;
+	}
+
+.leaflet-oldie .leaflet-popup-content-wrapper {
+	-ms-zoom: 1;
+	}
+.leaflet-oldie .leaflet-popup-tip {
+	width: 24px;
+	margin: 0 auto;
+
+	-ms-filter: "progid:DXImageTransform.Microsoft.Matrix(M11=0.70710678, M12=0.70710678, M21=-0.70710678, M22=0.70710678)";
+	filter: progid:DXImageTransform.Microsoft.Matrix(M11=0.70710678, M12=0.70710678, M21=-0.70710678, M22=0.70710678);
+	}
+
+.leaflet-oldie .leaflet-control-zoom,
+.leaflet-oldie .leaflet-control-layers,
+.leaflet-oldie .leaflet-popup-content-wrapper,
+.leaflet-oldie .leaflet-popup-tip {
+	border: 1px solid #999;
+	}
+
+
+/* div icon */
+
+.leaflet-div-icon {
+	background: #fff;
+	border: 1px solid #666;
+	}
+
+
+/* Tooltip */
+/* Base styles for the element that has a tooltip */
+.leaflet-tooltip {
+	position: absolute;
+	padding: 6px;
+	background-color: #fff;
+	border: 1px solid #fff;
+	border-radius: 3px;
+	color: #222;
+	white-space: nowrap;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+	pointer-events: none;
+	box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+	}
+.leaflet-tooltip.leaflet-interactive {
+	cursor: pointer;
+	pointer-events: auto;
+	}
+.leaflet-tooltip-top:before,
+.leaflet-tooltip-bottom:before,
+.leaflet-tooltip-left:before,
+.leaflet-tooltip-right:before {
+	position: absolute;
+	pointer-events: none;
+	border: 6px solid transparent;
+	background: transparent;
+	content: "";
+	}
+
+/* Directions */
+
+.leaflet-tooltip-bottom {
+	margin-top: 6px;
+}
+.leaflet-tooltip-top {
+	margin-top: -6px;
+}
+.leaflet-tooltip-bottom:before,
+.leaflet-tooltip-top:before {
+	left: 50%;
+	margin-left: -6px;
+	}
+.leaflet-tooltip-top:before {
+	bottom: 0;
+	margin-bottom: -12px;
+	border-top-color: #fff;
+	}
+.leaflet-tooltip-bottom:before {
+	top: 0;
+	margin-top: -12px;
+	margin-left: -6px;
+	border-bottom-color: #fff;
+	}
+.leaflet-tooltip-left {
+	margin-left: -6px;
+}
+.leaflet-tooltip-right {
+	margin-left: 6px;
+}
+.leaflet-tooltip-left:before,
+.leaflet-tooltip-right:before {
+	top: 50%;
+	margin-top: -6px;
+	}
+.leaflet-tooltip-left:before {
+	right: 0;
+	margin-right: -12px;
+	border-left-color: #fff;
+	}
+.leaflet-tooltip-right:before {
+	left: 0;
+	margin-left: -12px;
+	border-right-color: #fff;
+	}
+
+/* Printing */
+
+@media print {
+	/* Prevent printers from removing background-images of controls. */
+	.leaflet-control {
+		-webkit-print-color-adjust: exact;
+		print-color-adjust: exact;
+		}
+	}
+
+#lmap{height:560px;border-radius:6px;z-index:0;background:var(--land)}
+@media (max-width:860px){#lmap{height:440px}}
+.leaflet-container{font-family:var(--f-body)}
+.sq-ic{width:34px;height:22px;border-radius:4px;background:var(--off);color:#fff;font:600 11px/22px var(--f-mono);text-align:center;box-shadow:0 1px 4px rgba(0,0,0,.35);border:2px solid #fff;box-sizing:border-box}
+.leaflet-popup-content-wrapper{background:var(--surface);color:var(--ink);border-radius:10px}
+.leaflet-popup-tip{background:var(--surface)}
+.leaflet-popup-content{margin:12px 14px;min-width:220px}
+.pop{display:grid;gap:4px}
+.pop .pk{font:600 11px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--rain)}
+.pop .pt{font:700 24px/1 var(--f-display)}
+.pop .pv{font:700 36px/1 var(--f-display);color:var(--rain-deep);margin:4px 0}
+.pop .pv small{font-size:15px;color:var(--muted);font-weight:600}
+.pop .pm{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:4px;flex-wrap:wrap}
+.pop table{width:100%;border-collapse:collapse;font-size:12px}
+.pop td{padding:2px 0;border-bottom:1px solid var(--line)} .pop td.n{text-align:right;font-family:var(--f-mono)}
+.pop .pflag{font-size:12px;color:var(--warn);background:var(--warn-soft);border-radius:6px;padding:4px 6px}
+.lg{display:inline-block;width:10px;height:10px;border-radius:2px;margin-left:4px} .lg.n{background:var(--rain-deep)} .lg.d{background:var(--rain)}
+.scale{display:inline-flex;align-items:center;gap:3px} .scale i{width:16px;height:10px;border-radius:2px;display:inline-block}
+.rank{display:grid;gap:4px;max-height:470px;overflow:auto}
+.rk{display:grid;grid-template-columns:22px 82px minmax(0,1fr) 40px;align-items:center;gap:6px;background:none;border:0;padding:5px 4px;border-radius:6px;color:var(--ink);font:inherit;cursor:pointer;text-align:left}
+.rk:hover:not(:disabled){background:var(--rain-soft)} .rk:disabled{opacity:.55;cursor:default}
+.rk:focus-visible{outline:2px solid var(--rain)}
+.rn{font:600 12px var(--f-mono);color:var(--muted)} .rc{font:600 13px var(--f-mono)} .rv{font:600 13px var(--f-mono);text-align:right}
+.rb{height:10px;background:var(--bg);border-radius:3px;overflow:hidden} .rb i{display:block;height:100%;border-radius:3px}
+.chartbox{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:12px;min-width:0}
+.chartbox svg{display:block;width:100%;height:auto}
+.ax{font:12px var(--f-mono);fill:var(--muted)} .ax.b{font:600 13px var(--f-body);fill:var(--ink)}
+.big-note{font-size:17px;color:var(--ink)} .big-note b{color:var(--rain);font-size:22px}
+.scgrid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:16px;align-items:center}
+@media (max-width:760px){.scgrid{grid-template-columns:minmax(0,1fr)}}
 </style>
 </head>
 <body>
@@ -153,25 +844,34 @@ footer a{color:var(--rain)}
 <div class="wrap">
 
 <section aria-labelledby="t-mapa">
-  <div class="sechead"><div class="eyebrow">Resultados</div><h2 id="t-mapa">Mapa de lluvia</h2></div>
+  <div class="sechead"><div class="eyebrow">Resultados</div><h2 id="t-mapa">Mapa de lluvia</h2>
+  <p class="note">Toque un círculo para ver la lluvia de ese pluviómetro y todas sus lecturas. Elija el periodo con los botones.</p></div>
   <div class="seg" id="seg" role="group" aria-label="Periodo"></div>
   <div class="mapgrid">
-    <div class="mapbox"><div class="eyebrow" style="padding:2px 4px 6px">Región: Piura, Chulucanas y Bernal</div><svg id="map" role="img" aria-label="Mapa regional de estaciones con lluvia acumulada"></svg>
-      <div class="eyebrow" style="padding:14px 4px 6px">Zoom: Piura, Castilla, Veintiséis de Octubre y Catacaos</div><svg id="map2" role="img" aria-label="Mapa de la ciudad de Piura con lluvia acumulada"></svg>
-      <div class="legend" style="padding:8px 4px 2px">
-        <span><i class="sw"></i>Estación CFU (área ∝ mm)</span>
-        <span><i class="sw zero"></i>Midió 0 mm</span>
+    <div class="mapbox"><div id="lmap" role="region" aria-label="Mapa interactivo de pluviómetros"></div>
+      <div class="legend" style="padding:10px 4px 2px">
+        <span class="scale"><i style="background:#7DD3FC"></i><i style="background:#0EA5E9"></i><i style="background:#2563EB"></i><i style="background:#4338CA"></i> &lt;5 · 5–10 · 10–20 · &gt;20 mm</span>
+        <span><i class="sw zero"></i>0 mm</span>
         <span><i class="sw ap"></i>Ubicación aproximada</span>
         <span><i class="sw sq"></i>Estación oficial</span>
       </div>
     </div>
-    <aside class="panel" id="panel" aria-live="polite"></aside>
+    <aside class="panel"><div class="eyebrow" id="rankt">Ranking</div><div id="rank" class="rank"></div>
+      <p class="meta" style="margin:0">Toque un nombre para ubicarlo en el mapa.</p></aside>
   </div>
+</section>
+
+<section aria-labelledby="t-time">
+  <div class="sechead"><div class="eyebrow">Tiempo</div><h2 id="t-time">¿Cuándo llueve en Piura?</h2>
+  <p class="note">Cada barra es una ventana de 12 horas: promedio de todos los pluviómetros que reportaron. Azul oscuro: noche (19:00 → 07:00); celeste: día (07:00 → 19:00). La raya naranja marca el pluviómetro que más midió.</p></div>
+  <div class="chartbox"><svg id="timeline" role="img" aria-label="Lluvia de la red cada 12 horas"></svg></div>
+  <p class="note big-note" id="tlnote"></p>
 </section>
 
 <section aria-labelledby="t-cmp">
   <div class="sechead"><div class="eyebrow">Validación</div><h2 id="t-cmp">Casero contra oficial</h2></div>
-  <p class="note">Cada estación oficial frente a los pluviómetros CFU a menos de 8 km, por evento de lluvia. El aeropuerto cierra su lluvia cada 24 h a las 07:00; las estaciones automáticas del SENAMHI miden hora por hora (aquí sumadas en ventanas de 07:00 y 19:00) y por ahora solo hay datos del 1 al 5 de noviembre. En cada evento se suman todas las lecturas que caen dentro de la misma ventana.</p>
+  <p class="note">Cada estación oficial frente a los pluviómetros estudiantiles a menos de 8 km, por evento de lluvia. El aeropuerto cierra su lluvia cada 24 h a las 07:00; las estaciones automáticas del SENAMHI miden hora por hora (aquí sumadas en ventanas de 07:00 y 19:00) y por ahora solo hay datos del 1 al 5 de noviembre. En cada evento se suman todas las lecturas que caen dentro de la misma ventana.</p>
+  <div class="scgrid"><div class="chartbox"><svg id="scatter" role="img" aria-label="Pluviómetros estudiantiles frente a estaciones oficiales"></svg></div><p class="note" id="scnote"></p></div>
   <div class="tablewrap"><table class="cmp" id="cmp"></table></div>
   <p class="note" id="cmpnote"></p>
 </section>
@@ -183,6 +883,7 @@ footer a{color:var(--rain)}
 <footer id="foot"></footer>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script>
 const DATA = [{"code": "YYALUU-01", "place": "piura - catacaos", "lat": null, "lon": null, "loc": "sin datos", "D": 15.24, "A": 182.41469247509917, "readings": [{"date": "2026-10-27", "slot": "07", "mL": 0.0, "mm": 0.0, "obs": "no llovió"}, {"date": "2026-10-27", "slot": "19", "mL": 0.0, "mm": 0.0, "obs": "no llovió"}, {"date": "2026-10-28", "slot": "07", "mL": 4.0, "mm": 0.22, "obs": "llovió por unos minutos"}, {"date": "2026-10-28", "slot": "19", "mL": 0.0, "mm": 0.0, "obs": "no llovió"}, {"date": "2026-10-29", "slot": "07", "mL": 0.0, "mm": 0.0, "obs": "no llovió"}, {"date": "2026-10-29", "slot": "19", "mL": 0.0, "mm": 0.0, "obs": "no llovió"}, {"date": "2026-10-30", "slot": "07", "mL": 0.0, "mm": 0.0, "obs": "no llovió"}, {"date": "2026-10-30", "slot": "19", "mL": 0.0, "mm": 0.0, "obs": "no llovió"}, {"date": "2026-10-31", "slot": "07", "mL": 0.0, "mm": 0.0, "obs": "no llovió"}, {"date": "2026-10-31", "slot": "19", "mL": 0.0, "mm": 0.0, "obs": "no llovió"}, {"date": "2026-11-01", "slot": "07", "mL": 0.0, "mm": 0.0, "obs": "no llovió"}, {"date": "2026-11-01", "slot": "19", "mL": 0.0, "mm": 0.0, "obs": "no llovió"}, {"date": "2026-11-02", "slot": "07", "mL": 12.0, "mm": 0.66, "obs": "llovió por minutos"}, {"date": "2026-11-02", "slot": "19", "mL": 0.0, "mm": 0.0, "obs": "no llovio"}, {"date": "2026-11-03", "slot": "07", "mL": 0.0, "mm": 0.0, "obs": "no llovió"}, {"date": "2026-11-03", "slot": "19", "mL": 0.0, "mm": 0.0, "obs": "no llovió"}, {"date": "2026-11-04", "slot": "07", "mL": 0.0, "mm": 0.0, "obs": "no llovió"}, {"date": "2026-11-04", "slot": "19", "mL": 0.0, "mm": 0.0, "obs": "no llovió"}, {"date": "2026-11-05", "slot": "07", "mL": 0.0, "mm": 0.0, "obs": "no llovió"}], "n": 19, "total": 0.88, "wet": 2, "flag": "tiene 11 lecturas sin datos de estación"}, {"code": "ARIANA-02", "place": "Piura-Chulucanas", "lat": -5.090617, "lon": -80.160106, "loc": "exacta", "D": 15.0, "A": 176.71458676442586, "readings": [{"date": "2026-10-26", "slot": "19", "mL": 0.0, "mm": 0.0, "obs": "No llovio/llovió después de las 21 p.m"}, {"date": "2026-10-28", "slot": "19", "mL": 120.0, "mm": 6.79, "obs": "Acumulado"}, {"date": "2026-10-29", "slot": "19", "mL": 0.0, "mm": 0.0, "obs": "No llovio"}, {"date": "2026-10-30", "slot": "07", "mL": 0.0, "mm": 0.0, "obs": "No llovió"}, {"date": "2026-10-30", "slot": "19", "mL": 0.0, "mm": 0.0, "obs": "No llovió"}, {"date": "2026-10-31", "slot": "07", "mL": 0.0, "mm": 0.0, "obs": "No llovió"}, {"date": "2026-10-31", "slot": "19", "mL": 0.0, "mm": 0.0, "obs": "No llovió"}, {"date": "2026-11-01", "slot": "07", "mL": 0.0, "mm": 0.0, "obs": "No llovió"}, {"date": "2026-11-01", "slot": "19", "mL": 0.0, "mm": 0.0, "obs": "No llovió"}, {"date": "2026-11-02", "slot": "19", "mL": 19.0, "mm": 1.08, "obs": "Acumulado"}, {"date": "2026-11-03", "slot": "19", "mL": 15.0, "mm": 0.85, "obs": "Acumuló"}, {"date": "2026-11-04", "slot": "07", "mL": 0.0, "mm": 0.0, "obs": "No llovió"}, {"date": "2026-11-04", "slot": "19", "mL": 0.0, "mm": 0.0, "obs": "No llovió"}, {"date": "2026-11-05", "slot": "07", "mL": 0.0, "mm": 0.0, "obs": "No llovió"}], "n": 14, "total": 8.72, "wet": 3}, {"code": "HCINPH-03", "place": "Castilla", "lat": -5.1975, "lon": -80.6235, "loc": "aproximada", "D": 16.2, "A": 206.1198940020263, "readings": [{"date": "2026-10-29", "slot": "07", "mL": 0.0, "mm": 0.0, "obs": "No llovió"}, {"date": "2026-10-29", "slot": "19", "mL": 0.0, "mm": 0.0, "obs": "No llovió"}, {"date": "2026-10-30", "slot": "07", "mL": 0.0, "mm": 0.0, "obs": "No llovió"}, {"date": "2026-10-30", "slot": "19", "mL": 0.0, "mm": 0.0, "obs": "No llovió"}, {"date": "2026-10-31", "slot": "07", "mL": 0.0, "mm": 0.0, "obs": "No llovió"}, {"date": "2026-10-31", "slot": "19", "mL": 0.0, "mm": 0.0, "obs": "No llovió"}, {"date": "2026-11-01", "slot": "07", "mL": 0.0, "mm": 0.0, "obs": "No llovió"}, {"date": "2026-11-01", "slot": "19", "mL": 0.0, "mm": 0.0, "obs": "Hubo indicios pero no llovió"}, {"date": "2026-11-02", "slot": "07", "mL": 245.0, "mm": 11.89, "obs": "Llovió desde la madrugada hasta las 7"}, {"date": "2026-11-02", "slot": "19", "mL": 0.0, "mm": 0.0, "obs": "Son las 20:08 y aún no hay lluvia"}, {"date": "2026-11-03", "slot": "07", "mL": 0.0, "mm": 0.0, "obs": "No llovió"}, {"date": "2026-11-03", "slot": "19", "mL": 0.0, "mm": 0.0, "obs": "No llovió"}], "n": 12, "total": 11.89, "wet": 1}, {"code": "IMALOP-04", "place": "La Unión", "lat": -5.40478, "lon": -80.748625, "loc": "exacta", "D": 15.0, "A": 176.71458676442586, "readings": [{"date": "2026-10-28", "slot": "19", "mL": 12.0, "mm": 0.68, "obs": "solo cayo neblina"}, {"date": "2026-10-29", "slot": "07", "mL": 27.0, "mm": 1.53, "obs": "solo cayo neblina"}, {"date": "2026-10-29", "slot": "19", "mL": 255.0, "mm": 14.43, "obs": "lluvio con intensidad"}, {"date": "2026-10-30", "slot": "07", "mL": 5.0, "mm": 0.28, "obs": "solo cayo neblina"}, {"date": "2026-10-30", "slot": "19", "mL": 0.0, "mm": 0.0, "obs": "no lluvio"}, {"date": "2026-10-31", "slot": "07", "mL": 0.0, "mm": 0.0, "obs": "no lluvio"}, {"date": "2026-10-31", "slot": "19", "mL": 0.0, "mm": 0.0, "obs": "no lluvio"}, {"date": "2026-11-01", "slot": "07", "mL": 0.0, "mm": 0.0, "obs": "no llovió"}, {"date": "2026-11-01", "slot": "19", "mL": 0.0, "mm": 0.0, "obs": "no llovió"}, {"date": "2026-11-02", "slot": "07", "mL": 305.0, "mm": 17.26, "obs": "el día comenzó con lluvia"}, {"date": "2026-11-02", "slot": "19", "mL": 0.0, "mm": 0.0, "obs": "no llovió"}, {"date": "2026-11-03", "slot": "07", "mL": 0.0, "mm": 0.0, "obs": "no llovió"}, {"date": "2026-11-03", "slot": "19", "mL": 0.0, "mm": 0.0, "obs": "no llovió"}], "n": 13, "total": 34.18, "wet": 5}, {"code": "MVJPMS-05", "place": "Piura-Catacaos", "lat": -5.266, "lon": -80.675, "loc": "aproximada", "D": 15.26, "A": 182.89378535477164, "readings": [{"date": "2026-10-26", "slot": "19", "mL": 0.0, "mm": 0.0, "obs": "No llovió"}, {"date": "2026-10-27", "slot": "07", "mL": 0.0, "mm": 0.0, "obs": "No llovió"}, {"date": "2026-10-27", "slot": "19", "mL": 0.0, "mm": 0.0, "obs": "No llovió"}, {"date": "2026-10-28", "slot": "07", "mL": 5.0, "mm": 0.27, "obs": ""}, {"date": "2026-10-28", "slot": "19", "mL": 0.0, "mm": 0.0, "obs": "no llovió"}, {"date": "2026-10-29", "slot": "07", "mL": 0.0, "mm": 0.0, "obs": "No llovió"}, {"date": "2026-10-29", "slot": "19", "mL": 0.0, "mm": 0.0, "obs": "No llovió"}, {"date": "2026-10-30", "slot": "07", "mL": 0.0, "mm": 0.0, "obs": "No llovió"}, {"date": "2026-10-30", "slot": "19", "mL": 0.0, "mm": 0.0, "obs": "No llovió"}, {"date": "2026-11-01", "slot": "07", "mL": 3.0, "mm": 0.16, "obs": ""}, {"date": "2026-11-01", "slot": "19", "mL": 5.0, "mm": 0.27, "obs": ""}, {"date": "2026-11-02", "slot": "07", "mL": 0.0, "mm": 0.0, "obs": "No llovió"}, {"date": "2026-11-02", "slot": "19", "mL": 11.0, "mm": 0.6, "obs": ""}, {"date": "2026-11-03", "slot": "07", "mL": 0.0, "mm": 0.0, "obs": "No llovió"}, {"date": "2026-11-03", "slot": "19", "mL": 0.0, "mm": 0.0, "obs": "No llovió"}, {"date": "2026-11-04", "slot": "07", "mL": 0.0, "mm": 0.0, "obs": "No llovió"}, {"date": "2026-11-04", "slot": "19", "mL": 0.0, "mm": 0.0, "obs": "No llovió"}, {"date": "2026-11-05", "slot": "07", "mL": 0.0, "mm": 0.0, "obs": "No llovió"}], "n": 18, "total": 1.3, "wet": 4}, {"code": "ESTTAB-06", "place": "", "lat": null, "lon": null, "loc": "sin datos", "D": null, "A": null, "readings": [], "n": 0, "total": null, "wet": 0}, {"code": "AFMCGT-07", "place": "26 de Octubre", "lat": -5.18568, "lon": -80.677355, "loc": "exacta", "D": 15.2, "A": 181.45839167134645, "readings": [{"date": "2026-10-29", "slot": "07", "mL": 0.0, "mm": 0.0, "obs": "No Llovió"}, {"date": "2026-10-29", "slot": "19", "mL": 0.0, "mm": 0.0, "obs": "No Llovió"}, {"date": "2026-10-30", "slot": "07", "mL": 0.0, "mm": 0.0, "obs": "No Llovió"}, {"date": "2026-10-30", "slot": "19", "mL": 0.0, "mm": 0.0, "obs": "No Llovió"}, {"date": "2026-10-31", "slot": "07", "mL": 0.0, "mm": 0.0, "obs": "No Llovió"}, {"date": "2026-10-31", "slot": "19", "mL": 0.0, "mm": 0.0, "obs": "No Llovió"}, {"date": "2026-11-01", "slot": "07", "mL": 0.0, "mm": 0.0, "obs": "No Llovió"}, {"date": "2026-11-01", "slot": "19", "mL": 0.0, "mm": 0.0, "obs": "No Llovió"}, {"date": "2026-11-02", "slot": "07", "mL": 80.0, "mm": 4.41, "obs": ""}, {"date": "2026-11-02", "slot": "19", "mL": 0.0, "mm": 0.0, "obs": "No Llovió"}, {"date": "2026-11-03", "slot": "07", "mL": 0.0, "mm": 0.0, "obs": "No Llovió"}, {"date": "2026-11-03", "slot": "19", "mL": 0.0, "mm": 0.0, "obs": "No Llovió"}, {"date": "2026-11-04", "slot": "07", "mL": 0.0, "mm": 0.0, "obs": "No Llovió"}, {"date": "2026-11-04", "slot": "19", "mL": 0.0, "mm": 0.0, "obs": "No Llovió"}], "n": 14, "total": 4.41, "wet": 1}, {"code": "QTCANM-08", "place": "", "lat": null, "lon": null, "loc": "sin datos", "D": null, "A": null, "readings": [{"date": "2026-10-27", "slot": "07", "mL": 44.0, "mm": null, "obs": ""}, {"date": "2026-10-27", "slot": "19", "mL": 0.0, "mm": null, "obs": ""}, {"date": "2026-10-28", "slot": "07", "mL": 50.0, "mm": null, "obs": ""}, {"date": "2026-10-28", "slot": "19", "mL": 11.0, "mm": null, "obs": ""}, {"date": "2026-10-29", "slot": "07", "mL": 0.0, "mm": null, "obs": ""}, {"date": "2026-10-30", "slot": "07", "mL": 0.0, "mm": null, "obs": ""}], "n": 6, "total": null, "wet": 3, "flag": "tiene volúmenes pero sin diámetro no se calcula la lluvia"}, {"code": "JPBAVS-09", "place": "Piura- Chulucanas", "lat": -5.0985, "lon": -80.17281, "loc": "aproximada", "D": 22.0, "A": 380.1327110843649, "readings": [{"date": "2026-10-28", "slot": "19", "mL": 175.0, "mm": 4.6, "obs": ""}, {"date": "2026-10-29", "slot": "07", "mL": 0.0, "mm": 0.0, "obs": "NO LLOVIO"}, {"date": "2026-10-29", "slot": "19", "mL": 0.0, "mm": 0.0, "obs": "NO LLOVIO"}, {"date": "2026-10-30", "slot": "07", "mL": 0.0, "mm": 0.0, "obs": "NO LLOVIO"}, {"date": "2016-10-30", "slot": "19", "mL": 0.0, "mm": 0.0, "obs": "NO LLOVIO"}, {"date": "2026-10-31", "slot": "07", "mL": 0.0, "mm": 0.0, "obs": "NO LLOVIO"}, {"date": "2026-10-31", "slot": "19", "mL": 0.0, "mm": 0.0, "obs": "NO LLOVIO"}, {"date": "2026-11-01", "slot": "07", "mL": 0.0, "mm": 0.0, "obs": "NO LLOVIO"}, {"date": "2026-11-01", "slot": "19", "mL": 0.0, "mm": 0.0, "obs": "NO LLOVIO"}, {"date": "2026-11-02", "slot": "07", "mL": 0.0, "mm": 0.0, "obs": "NO LLOVIO"}, {"date": "2026-11-02", "slot": "19", "mL": 0.0, "mm": 0.0, "obs": "NO LLOVIO"}, {"date": "2026-11-03", "slot": "07", "mL": 0.0, "mm": 0.0, "obs": "NO LLOVIO"}, {"date": "2026-11-03", "slot": "19", "mL": 0.0, "mm": 0.0, "obs": "NO LLOVIO"}, {"date": "2026-11-04", "slot": "07", "mL": 0.0, "mm": 0.0, "obs": "NO LLOVIO"}, {"date": "2026-11-04", "slot": "19", "mL": 0.0, "mm": 0.0, "obs": "NO LLOVIO"}, {"date": "2026-11-05", "slot": "07", "mL": 0.0, "mm": 0.0, "obs": "NO LLOVIO"}], "n": 16, "total": 4.6, "wet": 1}, {"code": "VADBRR-10", "place": "Piura", "lat": -5.18, "lon": -80.676, "loc": "aproximada", "D": 21.37, "A": 358.6731985260402, "readings": [{"date": "2026-10-27", "slot": "19", "mL": 0.0, "mm": 0.0, "obs": ""}, {"date": "2026-10-28", "slot": "07", "mL": 70.0, "mm": 1.95, "obs": ""}, {"date": "2026-10-28", "slot": "19", "mL": 0.0, "mm": 0.0, "obs": ""}, {"date": "2026-10-29", "slot": "07", "mL": 0.0, "mm": 0.0, "obs": ""}, {"date": "2026-10-29", "slot": "19", "mL": 0.0, "mm": 0.0, "obs": ""}, {"date": "2026-10-30", "slot": "07", "mL": 0.0, "mm": 0.0, "obs": ""}], "n": 6, "total": 1.95, "wet": 1}, {"code": "MELODY-11", "place": "Piura", "lat": -5.18697, "lon": -80.590098, "loc": "exacta", "D": 15.0, "A": 176.71458676442586, "readings": [{"date": "2026-10-28", "slot": "07", "mL": 79.0, "mm": 4.47, "obs": "Noche del martes - Mañana del miércoles"}, {"date": "2026-10-29", "slot": "07", "mL": 0.0, "mm": 0.0, "obs": "No llovió"}, {"date": "2026-10-29", "slot": "19", "mL": 0.0, "mm": 0.0, "obs": "No llovió"}, {"date": "2026-10-30", "slot": "07", "mL": 0.0, "mm": 0.0, "obs": "No llovió"}, {"date": "2026-10-30", "slot": "19", "mL": 0.0, "mm": 0.0, "obs": "No llovió"}, {"date": "2026-10-31", "slot": "07", "mL": 5.0, "mm": 0.28, "obs": "Llovió poco temprano"}, {"date": "2026-10-31", "slot": "19", "mL": 0.0, "mm": 0.0, "obs": "No llovió"}, {"date": "2026-11-01", "slot": "07", "mL": 0.0, "mm": 0.0, "obs": "No llovió"}, {"date": "2026-11-01", "slot": "19", "mL": 0.0, "mm": 0.0, "obs": "No llovió"}, {"date": "2026-11-02", "slot": "07", "mL": 110.0, "mm": 6.22, "obs": "Llovió desde la media noche"}, {"date": "2026-11-02", "slot": "19", "mL": 0.0, "mm": 0.0, "obs": "No llovió después de la medición de la mañana"}, {"date": "2026-11-03", "slot": "07", "mL": 0.0, "mm": 0.0, "obs": "No llovió"}, {"date": "2026-11-03", "slot": "19", "mL": 0.0, "mm": 0.0, "obs": "No llovió"}, {"date": "2026-11-04", "slot": "07", "mL": 0.0, "mm": 0.0, "obs": "No llovió"}, {"date": "2026-11-04", "slot": "19", "mL": 0.0, "mm": 0.0, "obs": "No llovió"}], "n": 15, "total": 10.97, "wet": 3}, {"code": "FLSIFA-12", "place": "Piura", "lat": null, "lon": null, "loc": "sin datos", "D": null, "A": null, "readings": [{"date": "2026-10-26", "slot": "07", "mL": 0.0, "mm": null, "obs": "no llovio"}, {"date": "2026-10-29", "slot": "07", "mL": 50.0, "mm": null, "obs": ""}, {"date": "2026-10-30", "slot": "07", "mL": 0.0, "mm": null, "obs": "no llovio"}], "n": 3, "total": null, "wet": 1}, {"code": "XKLBVZ-13", "place": "", "lat": null, "lon": null, "loc": "sin datos", "D": null, "A": null, "readings": [], "n": 0, "total": null, "wet": 0}, {"code": "TRASHX-14", "place": "Piura", "lat": -5.1433504, "lon": -80.64085, "loc": "exacta", "D": 10.0, "A": 78.53981633974483, "readings": [{"date": "2026-10-28", "slot": "07", "mL": 78.5, "mm": 9.99, "obs": ""}, {"date": "2026-10-29", "slot": "19", "mL": 0.0, "mm": 0.0, "obs": "no llovió"}, {"date": "2026-10-30", "slot": "19", "mL": 0.0, "mm": 0.0, "obs": "no llovió"}, {"date": "2026-10-31", "slot": "07", "mL": 0.0, "mm": 0.0, "obs": "no llovió"}, {"date": "2026-11-01", "slot": "07", "mL": 0.0, "mm": 0.0, "obs": "no llovió"}, {"date": "2026-11-02", "slot": "07", "mL": 65.0, "mm": 8.28, "obs": "Llovió ligeramente desde temprano"}, {"date": "2026-11-03", "slot": "19", "mL": 0.0, "mm": 0.0, "obs": "no llovió"}, {"date": "2026-11-04", "slot": "07", "mL": 0.0, "mm": 0.0, "obs": "no llovío"}], "n": 8, "total": 18.27, "wet": 2, "flag": "revisar el diámetro: con boca de 10 cm marcó el doble que sus vecinos el 28 oct"}, {"code": "CHIRIV-15", "place": "", "lat": null, "lon": null, "loc": "sin datos", "D": null, "A": null, "readings": [], "n": 0, "total": null, "wet": 0}, {"code": "WFTJK-16", "place": "", "lat": null, "lon": null, "loc": "sin datos", "D": null, "A": null, "readings": [], "n": 0, "total": null, "wet": 0}, {"code": "FRIPFO-17", "place": "", "lat": null, "lon": null, "loc": "sin datos", "D": null, "A": null, "readings": [], "n": 0, "total": null, "wet": 0}];
 const BASE = {"rings": [[[-80.568, -5.4867], [-80.6367, -5.4861], [-80.6353, -5.4504], [-80.7054, -5.4295], [-80.7004, -5.4062], [-80.6499, -5.3968], [-80.5802, -5.4203], [-80.5256, -5.4211], [-80.568, -5.4867]], [[-80.7571, -5.4445], [-80.7912, -5.4839], [-80.8826, -5.5479], [-80.92, -5.4769], [-80.92, -5.331], [-80.7492, -5.4134], [-80.7571, -5.4445]], [[-80.5802, -5.4203], [-80.6499, -5.3968], [-80.6778, -5.3734], [-80.6992, -5.3132], [-80.6407, -5.3211], [-80.5883, -5.3013], [-80.5148, -5.3003], [-80.5265, -5.3512], [-80.5256, -5.4211], [-80.5802, -5.4203]], [[-80.8493, -5.2984], [-80.8056, -5.3386], [-80.7241, -5.3522], [-80.7004, -5.4062], [-80.7054, -5.4295], [-80.7216, -5.4214], [-80.7492, -5.4134], [-80.92, -5.331], [-80.92, -5.2481], [-80.8596, -5.2814], [-80.8493, -5.2984]], [[-80.6778, -5.3734], [-80.6499, -5.3968], [-80.7004, -5.4062], [-80.7241, -5.3522], [-80.8056, -5.3386], [-80.8493, -5.2984], [-80.8277, -5.225], [-80.801, -5.2127], [-80.7505, -5.291], [-80.6992, -5.3132], [-80.6778, -5.3734]], [[-80.568, -5.4867], [-80.5526, -5.4923], [-80.5382, -5.58], [-80.6679, -5.58], [-80.7653, -5.5363], [-80.7684, -5.5128], [-80.7637, -5.493], [-80.7017, -5.4772], [-80.6367, -5.4861], [-80.568, -5.4867]], [[-80.7684, -5.5128], [-80.7653, -5.5363], [-80.6679, -5.58], [-80.8716, -5.58], [-80.8826, -5.5479], [-80.7912, -5.4839], [-80.7684, -5.5128]], [[-80.7542, -5.4494], [-80.7637, -5.493], [-80.7684, -5.5128], [-80.7912, -5.4839], [-80.7571, -5.4445], [-80.7542, -5.4494]], [[-80.6353, -5.4504], [-80.6367, -5.4861], [-80.7017, -5.4772], [-80.7637, -5.493], [-80.7542, -5.4494], [-80.7216, -5.4214], [-80.7054, -5.4295], [-80.6353, -5.4504]], [[-80.7542, -5.4494], [-80.7571, -5.4445], [-80.7492, -5.4134], [-80.7216, -5.4214], [-80.7542, -5.4494]], [[-80.0354, -5.1783], [-80.03, -5.1868], [-80.03, -5.5763], [-80.0839, -5.5604], [-80.1259, -5.5108], [-80.2599, -5.3304], [-80.1534, -5.1708], [-80.0925, -5.1622], [-80.0354, -5.1783]], [[-80.5611, -5.2604], [-80.5169, -5.2356], [-80.365, -5.2324], [-80.323, -5.2905], [-80.2599, -5.3304], [-80.1259, -5.5108], [-80.0839, -5.5604], [-80.03, -5.5763], [-80.03, -5.58], [-80.5382, -5.58], [-80.5526, -5.4923], [-80.568, -5.4867], [-80.5256, -5.4211], [-80.5265, -5.3512], [-80.5148, -5.3003], [-80.5883, -5.3013], [-80.6407, -5.3211], [-80.6992, -5.3132], [-80.7505, -5.291], [-80.801, -5.2127], [-80.7681, -5.152], [-80.7077, -5.1702], [-80.6898, -5.203], [-80.6485, -5.2264], [-80.5611, -5.2604]], [[-80.0354, -5.1783], [-80.0925, -5.1622], [-80.03, -5.0909], [-80.03, -5.1868], [-80.0354, -5.1783]], [[-80.365, -5.2324], [-80.5169, -5.2356], [-80.5611, -5.2604], [-80.6485, -5.2264], [-80.6143, -5.1568], [-80.6317, -5.0999], [-80.6107, -5.0721], [-80.6023, -4.9751], [-80.502, -4.9835], [-80.421, -5.0576], [-80.4462, -5.1443], [-80.3381, -5.1372], [-80.365, -5.2324]], [[-80.6107, -5.0721], [-80.6317, -5.0999], [-80.6143, -5.1568], [-80.6485, -5.2264], [-80.6898, -5.203], [-80.7077, -5.1702], [-80.7681, -5.152], [-80.7446, -5.1301], [-80.7003, -5.0176], [-80.6977, -4.9601], [-80.6035, -4.96], [-80.6023, -4.9751], [-80.6107, -5.0721]], [[-80.0826, -5.0045], [-80.0388, -5.0264], [-80.03, -5.0264], [-80.03, -5.0909], [-80.0925, -5.1622], [-80.1534, -5.1708], [-80.2599, -5.3304], [-80.323, -5.2905], [-80.365, -5.2324], [-80.3381, -5.1372], [-80.2896, -5.0715], [-80.2215, -5.0504], [-80.2566, -4.9914], [-80.2403, -4.96], [-80.2054, -4.96], [-80.1764, -4.9718], [-80.1561, -4.96], [-80.0943, -4.96], [-80.0826, -5.0045]], [[-80.6977, -4.9601], [-80.7003, -5.0176], [-80.7446, -5.1301], [-80.7681, -5.152], [-80.801, -5.2127], [-80.8277, -5.225], [-80.8493, -5.2984], [-80.8596, -5.2814], [-80.8482, -5.0931], [-80.8506, -4.96], [-80.6977, -4.9601]], [[-80.8482, -5.0931], [-80.8596, -5.2814], [-80.92, -5.2481], [-80.92, -4.96], [-80.8506, -4.96], [-80.8482, -5.0931]], [[-80.0388, -5.0264], [-80.0826, -5.0045], [-80.0943, -4.96], [-80.03, -4.96], [-80.03, -5.0264], [-80.0388, -5.0264]], [[-80.1764, -4.9718], [-80.2054, -4.96], [-80.1561, -4.96], [-80.1764, -4.9718]], [[-80.2566, -4.9914], [-80.2215, -5.0504], [-80.2896, -5.0715], [-80.3381, -5.1372], [-80.4462, -5.1443], [-80.421, -5.0576], [-80.502, -4.9835], [-80.6023, -4.9751], [-80.6035, -4.96], [-80.2403, -4.96], [-80.2566, -4.9914]], [[-80.6977, -4.9601], [-80.6977, -4.96], [-80.6974, -4.96], [-80.6977, -4.9601]]], "labels": [{"name": "El Tallan", "lon": -80.6041, "lat": -5.44}, {"name": "Vice", "lon": -80.8366, "lat": -5.4289}, {"name": "Cura Mori", "lon": -80.6041, "lat": -5.3623}, {"name": "La Union", "lon": -80.8276, "lat": -5.3454}, {"name": "La Arena", "lon": -80.7788, "lat": -5.3058}, {"name": "Cristo Nos Valga", "lon": -80.6571, "lat": -5.5245}, {"name": "Sechura", "lon": -80.808, "lat": -5.5245}, {"name": "Rinconada Llicuar", "lon": -80.7671, "lat": -5.4667}, {"name": "Bernal", "lon": -80.6966, "lat": -5.4638}, {"name": "Bellavista De La Union", "lon": -80.7446, "lat": -5.433}, {"name": "La Matanza", "lon": -80.1115, "lat": -5.4206}, {"name": "Catacaos", "lon": -80.3723, "lat": -5.3861}, {"name": "Morropon", "lon": -80.0456, "lat": -5.1266}, {"name": "Castilla", "lon": -80.5324, "lat": -5.1185}, {"name": "Piura", "lon": -80.6742, "lat": -5.086}, {"name": "Chulucanas", "lon": -80.2116, "lat": -5.1497}, {"name": "Miguel Checa", "lon": -80.7933, "lat": -5.1116}, {"name": "La Huaca", "lon": -80.8864, "lat": -5.1706}, {"name": "Frias", "lon": -80.0592, "lat": -4.9822}, {"name": "Tambo Grande", "lon": -80.3289, "lat": -5.054}, {"name": "Sullana", "lon": -80.6976, "lat": -4.96}]};
@@ -213,101 +914,127 @@ function senEv(s, ev){
 const fmt = (v,d=1) => v==null ? '—' : v.toLocaleString('es-PE',{minimumFractionDigits:d,maximumFractionDigits:d});
 
 const NS='http://www.w3.org/2000/svg';
-const el=(t,a,p)=>{const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);p.appendChild(e);return e;};
-const KX=Math.cos(5.25*Math.PI/180);
-function makeMap(id, W,E,S,N, opts){
-  const svg=document.getElementById(id), VW=1000, VH=Math.round(VW*(N-S)/((E-W)*KX));
-  svg.setAttribute('viewBox',`0 0 ${VW} ${VH}`);
-  const P=(lat,lon)=>[(lon-W)/(E-W)*VW,(N-lat)/(N-S)*VH];
-  return {svg,VW,VH,P,W,E,S,N,...opts,layer:null};
-}
-const MAPS=[
-  makeMap('map',-80.90,-80.05,-5.56,-4.98,{rMax:44,towns:['Piura','Castilla','Catacaos','Chulucanas','La Arena','Cura Mori','Tambo Grande','La Union','Sechura','La Matanza','Vice'],scaleKm:10,box:[-80.73,-80.55,-5.285,-5.125]}),
-  makeMap('map2',-80.73,-80.55,-5.285,-5.125,{rMax:60,towns:[],extra:[['Piura',-5.1945,-80.6328],['Castilla',-5.2200,-80.6100],['Veintiséis de Octubre',-5.1580,-80.7000],['Catacaos',-5.2780,-80.6780]],scaleKm:2}),
-];
+const el=(t,a,p)=>{const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e;};
+let current='total', selected=null, MAP, LAYER, markers={};
+const SCALE=[[0,'#E0F2FE'],[1,'#7DD3FC'],[5,'#0EA5E9'],[10,'#2563EB'],[20,'#4338CA']];
+const colorFor=v=>{if(v==null||v===0) return null; let c=SCALE[1][1]; for(const [t,col] of SCALE) if(v>=t&&t>0) c=col; return c;};
+const curEv=()=>EVENTS.find(e=>e.id===current);
+function maxVal(){const ev=curEv();let m=1;DATA.forEach(s=>{const v=sumEv(s,ev);if(v>m)m=v;});return m;}
 
-let current = 'total', selected = null;
-
-function drawBase(M){
-  const g=el('g',{},M.svg);
-  BASE.rings.forEach(r=>el('path',{d:'M'+r.map(([lon,lat])=>M.P(lat,lon).map(v=>v.toFixed(1)).join(',')).join('L')+'Z',fill:'var(--land)',stroke:'var(--land-line)','stroke-width':1.2},g));
-  BASE.labels.filter(l=>M.towns.includes(l.name)).forEach(l=>{const [x,y]=M.P(l.lat,l.lon);const t=el('text',{x,y,'text-anchor':'middle',class:'lbl'},g);t.textContent=l.name;});
-  (M.extra||[]).forEach(([n,lat,lon])=>{const [x,y]=M.P(lat,lon);const t=el('text',{x,y,'text-anchor':'middle',class:'lbl town'},g);t.textContent=n;});
-  if(M.box){const [w,e,s,n]=M.box;const [x0,y0]=M.P(n,w),[x1,y1]=M.P(s,e);el('rect',{x:x0,y:y0,width:x1-x0,height:y1-y0,fill:'none',stroke:'var(--muted)','stroke-dasharray':'4 4','stroke-width':1.2},g);
-    const t=el('text',{x:x1+6,y:y1-4,class:'lbl'},g);t.textContent='zoom ↓';}
-  const kmW=M.scaleKm/(111.32*KX)/(M.E-M.W)*M.VW, x0=30, y0=M.VH-26;
-  el('line',{x1:x0,y1:y0,x2:x0+kmW,y2:y0,stroke:'var(--ink)','stroke-width':3},g);
-  const t=el('text',{x:x0,y:y0-8,class:'lbl'},g); t.textContent=M.scaleKm+' km';
-  const n=el('text',{x:M.VW-34,y:40,class:'lbl town','text-anchor':'middle'},g); n.textContent='N ↑';
+function sparkSVG(s){
+  // bars of every 12 h reading with water; night readings (07:00) dark, day (19:00) light
+  const rs=s.readings.slice().sort((a,b)=>endKey(a)<endKey(b)?-1:1); if(!rs.length) return '';
+  const W=240,H=70,pad=14, m=Math.max(1,...rs.map(r=>r.mm||0)), bw=Math.max(2,(W-8)/rs.length-2);
+  let g=''; rs.forEach((r,i)=>{const h=(r.mm||0)/m*(H-pad-4); const x=4+i*((W-8)/rs.length);
+    g+=`<rect x="${x.toFixed(1)}" y="${(H-pad-h).toFixed(1)}" width="${bw.toFixed(1)}" height="${Math.max(h,1).toFixed(1)}" rx="1" fill="${r.slot==='07'?'var(--rain-deep)':'var(--rain)'}" opacity="${r.mm?1:.25}"><title>${r.date.slice(8)}/${r.date.slice(5,7)} ${r.slot}:00 · ${fmt(r.mm,2)} mm</title></rect>`;});
+  const f=rs[0].date, l=rs[rs.length-1].date;
+  return `<svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}" role="img" aria-label="Lecturas de 12 h">${g}<line x1="2" y1="${H-pad}" x2="${W-2}" y2="${H-pad}" stroke="var(--line)"/><text x="4" y="${H-2}" font-size="10" fill="var(--muted)" font-family="var(--f-mono)">${f.slice(8)}/${f.slice(5,7)}</text><text x="${W-4}" y="${H-2}" font-size="10" fill="var(--muted)" text-anchor="end" font-family="var(--f-mono)">${l.slice(8)}/${l.slice(5,7)}</text></svg>`;
 }
-
-function maxVal(){
-  const ev=EVENTS.find(e=>e.id===current); let m=1;
-  DATA.forEach(s=>{const v=sumEv(s,ev); if(v>m)m=v;});
-  SEN.forEach(s=>{const v=senEv(s,ev); if(v>m)m=v;});
-  return m;
+function popupHTML(s){
+  const ev=curEv(), v=sumEv(s,ev), wet=s.readings.filter(r=>inEvent(r,ev)&&r.mL>0);
+  const rows=wet.map(r=>`<tr><td>${r.date.slice(8)}/${r.date.slice(5,7)} · ${r.slot}:00</td><td class="n">${fmt(r.mm,1)} mm</td></tr>`).join('');
+  return `<div class="pop"><div class="pk">Pluviómetro estudiantil${s.loc==='aproximada'?' · ubicación aproximada':''}</div>
+   <div class="pt">${s.code}</div><div class="pm">${s.place||'Piura'}</div>
+   <div class="pv">${fmt(v)}<small> mm · ${ev.name.toLowerCase()}</small></div>
+   ${sparkSVG(s)}<div class="pm"><i class="lg n"></i>lectura 07:00 (noche) <i class="lg d"></i>lectura 19:00 (día)</div>
+   ${rows?`<table>${rows}</table>`:'<div class="pm">Sin lluvia en este periodo.</div>'}
+   <div class="pm">${s.n} lecturas registradas</div>${s.flag?`<div class="pflag">${s.flag}</div>`:''}</div>`;
 }
-function drawStations(){ MAPS.forEach(drawLayer); }
-function inside(M,lat,lon){return lon>=M.W&&lon<=M.E&&lat>=M.S&&lat<=M.N;}
-function drawLayer(M){
-  if(M.layer) M.layer.remove();
-  const layer=M.layer=el('g',{},M.svg);
-  const ev=EVENTS.find(e=>e.id===current), m=maxVal(), rMax=M.rMax, r0=6;
-  const R=v=> v==null? r0 : r0 + (rMax-r0)*Math.sqrt(v/m);
-  SEN.filter(s=>inside(M,s.lat,s.lon)).forEach(s=>{
-    const [x,y]=M.P(s.lat,s.lon), v=senEv(s,ev), h=(v==null?7:Math.max(7,R(v)*0.8));
-    const g=el('g',{class:'st',tabindex:0,role:'button','aria-label':'Estación oficial '+s.name},layer);
-    el('rect',{x:x-h,y:y-h,width:2*h,height:2*h,fill:'var(--off)','fill-opacity':.25,stroke:'var(--off)','stroke-width':2},g);
-    const inBoxS = M.box && s.lon>=M.box[0]&&s.lon<=M.box[1]&&s.lat>=M.box[2]&&s.lat<=M.box[3];
-    if(!inBoxS){const t=el('text',{x:x+h+5,y:y+4,class:'val off'},g); t.textContent=s.name+' · '+(v==null?'—':fmt(v)+' mm');}
-    g.addEventListener('click',()=>select({sen:s})); g.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();select({sen:s});}});
-  });
-  const placed=[];
-  const list=DATA.filter(s=>s.lat!=null&&inside(M,s.lat,s.lon)).map(s=>({s,v:sumEv(s,ev)})).sort((a,b)=>(b.v||0)-(a.v||0));
-  list.forEach(({s,v})=>{
-    const [x,y]=M.P(s.lat,s.lon), r=R(v);
-    const g=el('g',{class:'st',tabindex:0,role:'button','aria-label':s.code+' '+(v==null?'sin lecturas':fmt(v)+' mm')},layer);
-    const empty = v===0||v==null;
-    el('circle',{cx:x,cy:y,r:r,fill:empty?'var(--surface)':'var(--rain)','fill-opacity':empty?1:.55,stroke:'var(--rain-deep)','stroke-width':selected===s.code?3.5:1.6,'stroke-dasharray':s.loc==='aproximada'?'5 4':'none'},g);
-    const inBox = M.box && s.lon>=M.box[0]&&s.lon<=M.box[1]&&s.lat>=M.box[2]&&s.lat<=M.box[3];
-    if(!inBox){
-      let ly=y-r-6; if(placed.some(p=>Math.abs(p[0]-x)<150&&Math.abs(p[1]-ly)<26)) ly=y+r+18;
-      placed.push([x,ly]);
-      const t=el('text',{x:x,y:ly,'text-anchor':'middle',class:'val'},g); t.textContent=s.code.slice(0,6)+' · '+(v==null?'—':fmt(v)+' mm');}
-    g.addEventListener('click',()=>select({st:s})); g.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();select({st:s});}});
-  });
-}
+function senPopup(s){const ev=curEv(),v=senEv(s,ev);
+  return `<div class="pop"><div class="pk" style="color:var(--off)">${s.kind} · ${s.agency}</div><div class="pt">${s.name}</div><div class="pm">${s.place}</div>
+   <div class="pv" style="color:var(--off)">${fmt(v)}<small> mm · ${ev.name.toLowerCase()}</small></div><div class="pm">${s.source||''}</div></div>`;}
 
-function select(o){
-  const p=document.getElementById('panel'); const ev=EVENTS.find(e=>e.id===current);
-  if(o.st){
-    const s=o.st; selected=s.code; drawStations();
-    const v=sumEv(s,ev);
-    const rows=s.readings.filter(r=>inEvent(r,ev)&&r.mL>0).map(r=>`<tr><td>${r.date.slice(8)}/${r.date.slice(5,7)} ${r.slot}:00</td><td class="n">${fmt(r.mL,0)} mL</td><td class="n">${fmt(r.mm,2)} mm</td></tr>`).join('');
-    p.innerHTML=`<div class="eyebrow">Estación CFU</div><h3>${s.code}</h3>
-      <div class="meta">${s.place||'Sin dirección'} · ubicación ${s.loc}${s.D?` · boca D = ${fmt(s.D,1)} cm`:''}</div>
-      <div class="big">${fmt(v)} <small>mm · ${ev.name.toLowerCase()}</small></div>
-      <div class="meta">${s.n} lecturas registradas, ${s.wet} con agua.</div>
-      ${rows?`<table><tr><th>Lectura</th><th class="n">Volumen</th><th class="n">Lluvia</th></tr>${rows}</table>`:'<div class="meta">Sin lluvia medida en este periodo.</div>'}
-      ${s.flag?`<span class="pill warn">${s.flag}</span>`:''}`;
-  } else if(o.sen){
-    const s=o.sen; selected=null; drawStations();
-    const v=senEv(s,ev);
-    p.innerHTML=`<div class="eyebrow">${s.kind} · ${s.agency}</div><h3>${s.name}</h3>
-      <div class="meta">${s.place}</div>
-      <div class="big" style="color:var(--off)">${fmt(v)} <small>mm · ${ev.name.toLowerCase()}</small></div>
-      <div class="meta">${s.source||''}</div>`;
-  } else {
-    p.innerHTML=`<div class="eyebrow">Cómo leer el mapa</div><h3>Toque una estación</h3>
-      <p class="meta" style="margin:0">Verá la lluvia del periodo elegido, cada lectura con agua (volumen en mL y lluvia en mm) y el diámetro de la boca usado en el cálculo P = 10·V/A.</p>
-      <p class="meta" style="margin:0">Los círculos punteados tienen ubicación aproximada porque el grupo aún no puso sus coordenadas.</p>`;
-  }
+function initMap(){
+  MAP=L.map('lmap',{zoomControl:true,scrollWheelZoom:false,tap:true}).setView([-5.20,-80.60],10);
+  const street=L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{maxZoom:18,attribution:'© OpenStreetMap · © CARTO'});
+  const sat=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:18,attribution:'Imágenes © Esri'});
+  street.addTo(MAP);
+  let fell=false; street.on('tileerror',()=>{ if(fell) return; fell=true; // sin acceso a mosaicos: dibujar los distritos
+    L.geoJSON({type:'FeatureCollection',features:BASE.rings.map(r=>({type:'Feature',geometry:{type:'Polygon',coordinates:[r]}}))},{style:{color:'#8FA6B8',weight:1,fillColor:'#E7EEF4',fillOpacity:1}}).addTo(MAP).bringToBack();});
+  L.control.layers({'Mapa':street,'Satélite':sat},null,{position:'topright'}).addTo(MAP);
+  L.control.scale({imperial:false}).addTo(MAP);
+  const pts=[...DATA.filter(s=>s.lat!=null),...SEN].map(s=>[s.lat,s.lon]);
+  MAP.fitBounds(pts,{padding:[24,24]});
+  drawStations();
+}
+function drawStations(){
+  if(LAYER) LAYER.remove(); LAYER=L.layerGroup().addTo(MAP); markers={};
+  const ev=curEv(), m=maxVal();
+  SEN.forEach(s=>{const v=senEv(s,ev);
+    const icon=L.divIcon({className:'',html:`<div class="sq-ic">${v==null?'':fmt(v)}</div>`,iconSize:[34,22],iconAnchor:[17,11]});
+    L.marker([s.lat,s.lon],{icon,keyboard:true,title:s.name}).bindPopup(()=>senPopup(s),{maxWidth:280}).addTo(LAYER);});
+  DATA.filter(s=>s.lat!=null).map(s=>({s,v:sumEv(s,ev)})).sort((a,b)=>(b.v||0)-(a.v||0)).forEach(({s,v})=>{
+    const col=colorFor(v), r=6+20*Math.sqrt((v||0)/m);
+    const mk=L.circleMarker([s.lat,s.lon],{radius:r,color:'#0A4F8A',weight:s.code===selected?3:1.5,dashArray:s.loc==='aproximada'?'4 3':null,fillColor:col||'#FFFFFF',fillOpacity:col?.85:1})
+      .bindPopup(()=>popupHTML(s),{maxWidth:280,autoPanPadding:[20,20]}).bindTooltip(`${s.code} · ${v==null?'—':fmt(v)+' mm'}`,{direction:'top',offset:[0,-r]});
+    mk.on('click',()=>{selected=s.code;}); mk.addTo(LAYER); markers[s.code]=mk;});
+  buildRank();
+}
+function openStation(code){const mk=markers[code]; if(!mk) return; MAP.flyTo(mk.getLatLng(),Math.max(MAP.getZoom(),12),{duration:.6}); setTimeout(()=>mk.openPopup(),650);
+  document.getElementById('lmap').scrollIntoView({behavior:'smooth',block:'center'});}
+
+function buildRank(){
+  const ev=curEv(); const list=DATA.map(s=>({s,v:sumEv(s,ev)})).filter(x=>x.v!=null).sort((a,b)=>b.v-a.v);
+  const m=Math.max(1,...list.map(x=>x.v));
+  document.getElementById('rank').innerHTML=list.map(({s,v},i)=>`<button type="button" class="rk" data-code="${s.code}" ${s.lat==null?'disabled title="Sin coordenadas"':''}>
+     <span class="rn">${i+1}</span><span class="rc">${s.code}</span><span class="rb"><i style="width:${Math.max(1.5,v/m*100)}%;background:${colorFor(v)||'var(--line)'}"></i></span><span class="rv">${fmt(v)}</span></button>`).join('')
+    || '<p class="note">Sin datos en este periodo.</p>';
+  document.querySelectorAll('.rk').forEach(b=>b.addEventListener('click',()=>openStation(b.dataset.code)));
+  document.getElementById('rankt').textContent='Ranking · '+ev.name.toLowerCase();
 }
 
 function buildSeg(){
   const seg=document.getElementById('seg');
   EVENTS.forEach(ev=>{const b=document.createElement('button');b.type='button';b.textContent=ev.name;b.setAttribute('aria-pressed',ev.id===current);
-    b.addEventListener('click',()=>{current=ev.id;[...seg.children].forEach(c=>c.setAttribute('aria-pressed',c===b));drawStations();select(selected?{st:DATA.find(s=>s.code===selected)}:{});});seg.appendChild(b);});
+    b.addEventListener('click',()=>{current=ev.id;[...seg.children].forEach(c=>c.setAttribute('aria-pressed',c===b));MAP.closePopup();drawStations();});seg.appendChild(b);});
+}
+
+function buildTimeline(){
+  // ventanas de 12 h desde la primera lectura hasta la última
+  const keys=[...new Set(DATA.flatMap(s=>s.readings.map(endKey)))].sort();
+  const win=keys.map(k=>{const vals=DATA.flatMap(s=>s.readings.filter(r=>endKey(r)===k&&r.mm!=null).map(r=>r.mm));
+    return {k,avg:vals.length?vals.reduce((a,b)=>a+b,0)/vals.length:0,max:vals.length?Math.max(...vals):0,n:vals.length};});
+  const svg=document.getElementById('timeline'); svg.innerHTML='';
+  const W=1000,H=300,L0=46,R0=34,T0=26,B0=46; svg.setAttribute('viewBox',`0 0 ${W} ${H}`);
+  const m=Math.ceil(Math.max(2,...win.map(w=>w.max))/5)*5, bw=(W-L0-R0)/win.length;
+  const y=v=>T0+(H-T0-B0)*(1-v/m);
+  for(let t=0;t<=m;t+=5){el('line',{x1:L0,x2:W-R0,y1:y(t),y2:y(t),stroke:'var(--line)'},svg);const tx=el('text',{x:L0-8,y:y(t)+4,'text-anchor':'end',class:'ax'},svg);tx.textContent=t;}
+  const yl=el('text',{x:L0-8,y:T0-12,'text-anchor':'end',class:'ax'},svg); yl.textContent='mm';
+  win.forEach((w,i)=>{const x=L0+i*bw, night=w.k.endsWith('T07');
+    el('rect',{x:x+bw*.12,y:y(w.avg),width:bw*.76,height:Math.max(0,y(0)-y(w.avg)),rx:2,fill:night?'var(--rain-deep)':'var(--rain)'},svg);
+    if(w.max>0){el('line',{x1:x+bw*.2,x2:x+bw*.8,y1:y(w.max),y2:y(w.max),stroke:'var(--off)','stroke-width':3},svg);
+      el('line',{x1:x+bw/2,x2:x+bw/2,y1:y(w.max),y2:y(w.avg),stroke:'var(--off)','stroke-width':1,'stroke-dasharray':'2 2'},svg);}
+    if(night){const tx=el('text',{x:x+bw,y:H-B0+16,'text-anchor':'middle',class:'ax'},svg); tx.textContent=w.k.slice(8,10)+'/'+w.k.slice(5,7);}
+  });
+  el('line',{x1:L0,x2:W-R0,y1:y(0),y2:y(0),stroke:'var(--muted)'},svg);
+  const tot=s=>DATA.reduce((a,st)=>a+st.readings.filter(r=>r.slot===s).reduce((b,r)=>b+(r.mm||0),0),0);
+  const n=tot('07'), d=tot('19'), pct=Math.round(100*n/(n+d||1));
+  document.getElementById('tlnote').innerHTML=`<b>${pct}%</b> de toda la lluvia medida por la red cayó de noche, entre las 19:00 y las 07:00.`;
+}
+
+function buildScatter(){
+  const pts=[];
+  SEN.forEach(s=>{EVENTS.slice(1).forEach(ev=>{const sv=senEv(s,ev); if(sv==null) return;
+    DATA.filter(d=>d.lat!=null&&d.A&&dist(s,d)<=8).forEach(d=>{const v=sumEv(d,ev); if(v==null||(v===0&&sv===0)) return; pts.push({x:sv,y:v,code:d.code,st:s.name,ev:ev.name});});});});
+  const svg=document.getElementById('scatter'); svg.innerHTML='';
+  const W=520,H=420,L0=50,R0=16,T0=16,B0=46; svg.setAttribute('viewBox',`0 0 ${W} ${H}`);
+  const m=Math.ceil(Math.max(5,...pts.map(p=>Math.max(p.x,p.y)))/5)*5;
+  const X=v=>L0+(W-L0-R0)*v/m, Y=v=>T0+(H-T0-B0)*(1-v/m);
+  for(let t=0;t<=m;t+=5){el('line',{x1:X(t),x2:X(t),y1:Y(0),y2:Y(m),stroke:'var(--line)'},svg);el('line',{x1:X(0),x2:X(m),y1:Y(t),y2:Y(t),stroke:'var(--line)'},svg);
+    const a=el('text',{x:X(t),y:H-B0+16,'text-anchor':'middle',class:'ax'},svg);a.textContent=t; const b=el('text',{x:L0-8,y:Y(t)+4,'text-anchor':'end',class:'ax'},svg);b.textContent=t;}
+  el('polygon',{points:`${X(0)},${Y(0)} ${X(m)},${Y(m*1.25>m?m:m*1.25)} ${X(m/1.25)},${Y(m)} `,fill:'none'},svg);
+  // banda ±25 %
+  el('path',{d:`M${X(0)},${Y(0)} L${X(m)},${Y(Math.min(m,m*1.25))} L${X(m/1.25)},${Y(m)} Z`,fill:'var(--rain-soft)',opacity:.0},svg);
+  el('path',{d:`M${X(0)},${Y(0)} L${X(m/1.25)},${Y(m)} L${X(m)},${Y(m)} L${X(m)},${Y(m*0.75)} Z`,fill:'var(--rain-soft)',opacity:.7},svg);
+  el('line',{x1:X(0),y1:Y(0),x2:X(m),y2:Y(m),stroke:'var(--muted)','stroke-dasharray':'5 4'},svg);
+  const t1=el('text',{x:X(m)-6,y:Y(m)+16,'text-anchor':'end',class:'ax'},svg); t1.textContent='casero = oficial';
+  const xl=el('text',{x:(L0+W-R0)/2,y:H-8,'text-anchor':'middle',class:'ax b'},svg); xl.textContent='Estación oficial (mm)';
+  const yl=el('text',{x:14,y:(T0+H-B0)/2,'text-anchor':'middle',class:'ax b',transform:`rotate(-90 14 ${(T0+H-B0)/2})`},svg); yl.textContent='Pluviómetro estudiantil (mm)';
+  pts.forEach(p=>{const g=el('g',{},svg); const ok=p.x>0&&Math.abs(p.y-p.x)/p.x<=0.25;
+    el('circle',{cx:X(p.x),cy:Y(p.y),r:7,fill:ok?'var(--rain)':'var(--off)',stroke:'var(--surface)','stroke-width':2},g);
+    const tt=el('title',{},g); tt.textContent=`${p.code} vs ${p.st} (${p.ev}): ${fmt(p.y)} vs ${fmt(p.x)} mm`;});
+  const good=pts.filter(p=>p.x>0&&Math.abs(p.y-p.x)/p.x<=0.25);
+  document.getElementById('scnote').innerHTML=`Cada punto es un pluviómetro estudiantil comparado con una estación oficial a menos de 8 km, en un mismo evento. Sobre la línea punteada, los dos midieron lo mismo. <b style="color:var(--rain)">${good.length} de ${pts.length}</b> comparaciones quedan dentro de ±25 % (zona celeste)${good.length?': '+[...new Set(good.map(p=>p.code))].join(', '):''}.`;
 }
 
 function buildStats(){
@@ -390,9 +1117,9 @@ function buildIssues(){
   document.getElementById('issues').innerHTML=out.join('');
 }
 
-(document.getElementById('corte')||{}).textContent = "5 nov 2026, 10:40";
+(document.getElementById('corte')||{}).textContent = "x";
 document.getElementById('foot').innerHTML = "Proyecto del curso Concepción Física del Universo (FI 1363), Universidad Nacional de Piura. Fuentes: hoja compartida <b>Red de pluviómetros CFU 2026</b> (lecturas de los alumnos, P = 10·V/A) y estación sinóptica del aeropuerto de Piura (OMM 84401), resumen diario de <a href=\"https://www.ogimet.com/cgi-bin/gsynres?ind=84401&lang=en\" target=\"_blank\" rel=\"noopener\">Ogimet</a>. Límites distritales: INEI vía peru-geojson (mapa esquemático, sin el distrito Veintiséis de Octubre).";
-buildSeg(); MAPS.forEach(drawBase); drawStations(); buildStats(); rain(); buildCmp(); buildLiters(); select({});
+buildSeg(); initMap(); buildStats(); rain(); buildTimeline(); buildScatter(); buildCmp(); buildLiters();
 </script>
 
 </body>
