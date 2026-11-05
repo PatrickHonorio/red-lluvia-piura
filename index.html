@@ -1,0 +1,399 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Red de monitoreo de precipitación de lluvia en Piura: pluviómetros caseros de estudiantes de la UNP validados con el SENAMHI y el aeropuerto de Piura.">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Red de Lluvia UNP</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Source+Sans+3:wght@400;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* Layout: full-bleed storm hero with live rain, then a single reading column: method, map, comparison, team, data notes. */
+:root{
+  --bg:#F3F7FB; --surface:#FFFFFF; --ink:#0D2233; --muted:#55697A; --line:#D7E1EA;
+  --land:#E7EEF4; --land-line:#B7C7D4;
+  --rain:#0A84D6; --rain-soft:#D3ECFB; --rain-deep:#0A4F8A;
+  --off:#E58A00; --off-soft:#FFEACC;
+  --warn:#C2410C; --warn-soft:#FDE3D6;
+  --storm:#061A2C; --storm-2:#0B2C47; --cyan:#22D3EE; --amber:#FFB020; --on-storm:#EAF6FF; --on-storm-muted:#9FC0D8;
+  --f-display:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
+  --f-body:"Source Sans 3","Segoe UI",system-ui,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#08131D; --surface:#0F1F2C; --ink:#E5F0F8; --muted:#93A9BA; --line:#203546;
+  --land:#132636; --land-line:#2B4356;
+  --rain:#38BDF8; --rain-soft:#0F3550; --rain-deep:#9BD8FA;
+  --off:#FFB020; --off-soft:#3A2A0C;
+  --warn:#FB923C; --warn-soft:#3B1F12;
+  --storm:#040F19; --storm-2:#0A2236; color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --bg:#08131D; --surface:#0F1F2C; --ink:#E5F0F8; --muted:#93A9BA; --line:#203546;
+  --land:#132636; --land-line:#2B4356;
+  --rain:#38BDF8; --rain-soft:#0F3550; --rain-deep:#9BD8FA;
+  --off:#FFB020; --off-soft:#3A2A0C;
+  --warn:#FB923C; --warn-soft:#3B1F12;
+  --storm:#040F19; --storm-2:#0A2236; color-scheme:dark;}
+
+.hero{position:relative;overflow:hidden;background:radial-gradient(120% 90% at 85% 0%,var(--storm-2) 0%,var(--storm) 60%);color:var(--on-storm)}
+.hero canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;opacity:.55}
+.hero-in{position:relative;max-width:1080px;margin:0 auto;padding-block:56px 40px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:22px}
+.kicker{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;font-family:var(--f-mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--on-storm-muted)}
+.kicker .dot{width:8px;height:8px;border-radius:50%;background:var(--cyan);box-shadow:0 0 0 4px rgba(34,211,238,.18);animation:pulse 2.4s ease-in-out infinite}
+@keyframes pulse{50%{box-shadow:0 0 0 8px rgba(34,211,238,0)}}
+.hero h1{font-family:var(--f-display);font-weight:800;font-size:clamp(44px,8.4vw,92px);line-height:.92;margin:0;letter-spacing:.005em;text-transform:uppercase;text-wrap:balance;max-width:14ch}
+.hero h1 em{font-style:normal;color:var(--cyan)}
+.hero .sub{font-size:clamp(17px,2.1vw,20px);line-height:1.45;max-width:62ch;margin:0;color:var(--on-storm)}
+.hero .sub b{color:var(--amber);font-weight:700}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font-family:var(--f-mono);font-size:13px;padding:6px 12px;border-radius:999px;border:1px solid rgba(159,192,216,.35);color:var(--on-storm);background:rgba(255,255,255,.04)}
+.chip b{color:var(--cyan);font-weight:600}
+.hstats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:rgba(159,192,216,.22);border:1px solid rgba(159,192,216,.22);border-radius:10px;overflow:hidden;margin-top:6px}
+.hstat{background:rgba(6,26,44,.72);padding:16px 18px;display:grid;gap:4px;min-width:0}
+.hstat .v{font-family:var(--f-display);font-weight:700;font-size:clamp(34px,4.4vw,46px);line-height:1;font-variant-numeric:tabular-nums;color:var(--on-storm)}
+.hstat .v small{font-size:.5em;font-weight:600;color:var(--on-storm-muted)}
+.hstat .v .c{color:var(--cyan)} .hstat .v .a{color:var(--amber)}
+.hstat .k{font-size:13px;line-height:1.35;color:var(--on-storm-muted)}
+@media (max-width:760px){.hstats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;counter-reset:s}
+@media (max-width:760px){.steps{grid-template-columns:minmax(0,1fr)}}
+.step{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px;display:grid;gap:8px;align-content:start;min-width:0}
+.step .n{font-family:var(--f-mono);font-size:12px;letter-spacing:.1em;color:var(--rain);font-weight:600}
+.step h3{font-family:var(--f-display);font-size:24px;line-height:1.05;margin:0}
+.step p{margin:0;font-size:15px;color:var(--muted)}
+.step svg{width:44px;height:44px}
+.formula{font-family:var(--f-mono);font-size:15px;color:var(--ink);background:var(--rain-soft);border-radius:6px;padding:4px 8px;justify-self:start}
+.team{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:20px;display:grid;gap:14px}
+.names{display:flex;flex-wrap:wrap;gap:8px}
+.names span{font-size:14px;padding:5px 11px;border-radius:999px;background:var(--rain-soft);color:var(--rain-deep);font-weight:600}
+.sechead{display:grid;gap:6px}
+.sechead .eyebrow{color:var(--rain)}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.5;margin:0}
+.wrap{max-width:1080px;margin:0 auto;padding-block:28px 56px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:36px}
+header{display:grid;gap:10px}
+.eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+h1{font-family:var(--f-display);font-weight:700;font-size:clamp(34px,6vw,56px);line-height:1;margin:0;text-wrap:balance;letter-spacing:.005em}
+h2{font-family:var(--f-display);font-weight:600;font-size:28px;line-height:1.1;margin:0;text-wrap:balance}
+.lede{max-width:66ch;color:var(--muted);margin:0}
+.lede b{color:var(--ink)}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:12px 14px;display:grid;gap:2px}
+.stat .v{font-family:var(--f-display);font-size:34px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums}
+.stat .v small{font-size:18px;font-weight:600;color:var(--muted)}
+.stat .k{font-size:13px;color:var(--muted)}
+@media (max-width:720px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+section{display:grid;gap:14px}
+.mapgrid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:16px;align-items:start}
+@media (max-width:860px){.mapgrid{grid-template-columns:minmax(0,1fr)}}
+.mapbox{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:10px;min-width:0}
+.mapbox svg{display:block;width:100%;height:auto}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg button{font:600 14px/1 var(--f-body);padding:8px 12px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--rain);border-color:var(--rain);color:var(--surface)}
+.seg button:focus-visible,.st:focus-visible{outline:2px solid var(--rain);outline-offset:2px}
+.legend{display:flex;flex-wrap:wrap;gap:14px;font-size:13px;color:var(--muted);align-items:center}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.sw{width:14px;height:14px;border-radius:50%;background:var(--rain);opacity:.85;display:inline-block}
+.sw.sq{border-radius:2px;background:var(--off)}
+.sw.ap{background:transparent;border:2px dashed var(--rain)}
+.sw.zero{background:var(--surface);border:2px solid var(--rain)}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:14px;display:grid;gap:8px;min-width:0}
+.panel h3{font-family:var(--f-display);font-size:24px;margin:0;line-height:1}
+.panel .meta{font-size:13px;color:var(--muted)}
+.panel table{width:100%;border-collapse:collapse;font-size:13px}
+.panel td,.panel th{padding:3px 4px;border-bottom:1px solid var(--line);text-align:left}
+.panel td.n,.panel th.n{text-align:right;font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.big{font-family:var(--f-display);font-size:44px;font-weight:700;line-height:1;color:var(--rain-deep)}
+.big small{font-size:20px;color:var(--muted)}
+.pill{display:inline-block;font-size:12px;font-weight:600;padding:2px 8px;border-radius:999px;background:var(--rain-soft);color:var(--rain-deep)}
+.pill.off{background:var(--off-soft);color:var(--off)}
+.pill.warn{background:var(--warn-soft);color:var(--warn)}
+.st{cursor:pointer}
+.lbl{font-family:var(--f-body);font-size:13px;fill:var(--muted)}
+.lbl.town{font-weight:600;fill:var(--ink);font-size:14px}
+.val{font-family:var(--f-mono);font-size:13px;font-weight:500;fill:var(--ink);paint-order:stroke;stroke:var(--surface);stroke-width:4px}
+.val.off{fill:var(--off)}
+.tablewrap{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:6px}
+table.cmp{border-collapse:collapse;width:100%;min-width:640px;font-size:14px}
+table.cmp th,table.cmp td{padding:9px 12px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+table.cmp th{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600}
+table.cmp td.n{font-family:var(--f-mono);text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+table.cmp tr.grp td{background:var(--bg);font-weight:700;font-family:var(--f-display);font-size:18px}
+.bars{display:grid;gap:3px;min-width:160px}
+.bar{height:9px;border-radius:2px;background:var(--rain)}
+.bar.off{background:var(--off)}
+.note{font-size:14px;color:var(--muted);max-width:72ch;margin:0}
+.issues{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px}
+.issue{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:10px 12px;font-size:14px;display:grid;gap:4px}
+.issue b{font-family:var(--f-mono);font-size:13px}
+.liters{background:var(--rain-deep);color:var(--surface);border-radius:6px;padding:18px 20px;display:grid;gap:6px}
+.liters .big{color:var(--surface)}
+.liters p{margin:0;max-width:70ch}
+footer{font-size:13px;color:var(--muted)}
+footer a{color:var(--rain)}
+</style>
+</head>
+<body>
+
+
+<div class="hero">
+  <canvas id="rain" aria-hidden="true"></canvas>
+  <div class="hero-in">
+    <div class="kicker"><span class="dot" aria-hidden="true"></span><span>Universidad Nacional de Piura</span><span>·</span><span>Escuela Profesional de Física – Ingeniería Agroindustrial</span><span>·</span><span>El Niño 2026</span></div>
+    <h1>Red de monitoreo de <em>precipitación de lluvia</em></h1>
+    <p class="sub">Estudiantes de Ingeniería Agroindustrial de la UNP construyeron, calibraron e instalaron pluviómetros caseros en sus casas de Piura, Castilla, Veintiséis de Octubre, Catacaos, Chulucanas y Bernal. Dos veces al día, a las 07:00 y a las 19:00, registran la lluvia de El Niño, y validan sus datos frente a los equipos calibrados del <b>SENAMHI</b> y del <b>aeropuerto de Piura</b>.</p>
+    <div class="chips"><span class="chip"><b>P = 10·V/A</b> lluvia en mm</span><span class="chip"><b>07:00 · 19:00</b> lecturas diarias</span><span class="chip"><b>1 mm</b> = 1 L por m²</span></div>
+    <div class="hstats" id="stats"></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+<section aria-labelledby="t-mapa">
+  <div class="sechead"><div class="eyebrow">Resultados</div><h2 id="t-mapa">Mapa de lluvia</h2></div>
+  <div class="seg" id="seg" role="group" aria-label="Periodo"></div>
+  <div class="mapgrid">
+    <div class="mapbox"><div class="eyebrow" style="padding:2px 4px 6px">Región: Piura, Chulucanas y Bernal</div><svg id="map" role="img" aria-label="Mapa regional de estaciones con lluvia acumulada"></svg>
+      <div class="eyebrow" style="padding:14px 4px 6px">Zoom: Piura, Castilla, Veintiséis de Octubre y Catacaos</div><svg id="map2" role="img" aria-label="Mapa de la ciudad de Piura con lluvia acumulada"></svg>
+      <div class="legend" style="padding:8px 4px 2px">
+        <span><i class="sw"></i>Estación CFU (área ∝ mm)</span>
+        <span><i class="sw zero"></i>Midió 0 mm</span>
+        <span><i class="sw ap"></i>Ubicación aproximada</span>
+        <span><i class="sw sq"></i>Estación oficial</span>
+      </div>
+    </div>
+    <aside class="panel" id="panel" aria-live="polite"></aside>
+  </div>
+</section>
+
+<section aria-labelledby="t-cmp">
+  <div class="sechead"><div class="eyebrow">Validación</div><h2 id="t-cmp">Casero contra oficial</h2></div>
+  <p class="note">Cada estación oficial frente a los pluviómetros CFU a menos de 8 km, por evento de lluvia. El aeropuerto cierra su lluvia cada 24 h a las 07:00; las estaciones automáticas del SENAMHI miden hora por hora (aquí sumadas en ventanas de 07:00 y 19:00) y por ahora solo hay datos del 1 al 5 de noviembre. En cada evento se suman todas las lecturas que caen dentro de la misma ventana.</p>
+  <div class="tablewrap"><table class="cmp" id="cmp"></table></div>
+  <p class="note" id="cmpnote"></p>
+</section>
+
+<section aria-labelledby="t-lit">
+  <div class="liters" id="liters"></div>
+</section>
+
+<footer id="foot"></footer>
+</div>
+
+<script>
+const DATA = [{"code": "YYALUU-01", "place": "", "lat": null, "lon": null, "loc": "sin datos", "D": null, "A": null, "readings": [{"date": "2026-10-26", "slot": "19", "mL": 0.0, "mm": null, "obs": "no llovió"}, {"date": "2026-10-27", "slot": "07", "mL": 0.0, "mm": null, "obs": "no llovió"}, {"date": "2026-10-27", "slot": "19", "mL": 0.0, "mm": null, "obs": "no llovió"}, {"date": "2026-10-28", "slot": "07", "mL": 4.0, "mm": null, "obs": ""}, {"date": "2026-10-28", "slot": "19", "mL": 0.0, "mm": null, "obs": "no llovió"}, {"date": "2026-10-29", "slot": "07", "mL": 0.0, "mm": null, "obs": "no llovió"}, {"date": "2026-10-29", "slot": "19", "mL": 0.0, "mm": null, "obs": "no llovió"}, {"date": "2026-10-30", "slot": "07", "mL": 0.0, "mm": null, "obs": "no llovió"}, {"date": "2026-10-30", "slot": "19", "mL": 0.0, "mm": null, "obs": "no llovió"}, {"date": "2026-10-31", "slot": "07", "mL": 0.0, "mm": null, "obs": "no llovió"}, {"date": "2026-10-31", "slot": "19", "mL": 0.0, "mm": null, "obs": "no llovió"}], "n": 11, "total": null, "wet": 1, "flag": "tiene 11 lecturas sin datos de estación"}, {"code": "ARIANA-02", "place": "Piura-Chulucanas", "lat": -5.090617, "lon": -80.160106, "loc": "exacta", "D": 15.0, "A": 176.71458676442586, "readings": [{"date": "2026-10-26", "slot": "19", "mL": 0.0, "mm": 0.0, "obs": "No llovio/llovió después de las 21 p.m"}, {"date": "2026-10-28", "slot": "19", "mL": 120.0, "mm": 6.79, "obs": "Acumulado"}, {"date": "2026-10-29", "slot": "19", "mL": 0.0, "mm": 0.0, "obs": "No llovio"}, {"date": "2026-10-30", "slot": "07", "mL": 0.0, "mm": 0.0, "obs": "No llovió"}, {"date": "2026-10-30", "slot": "19", "mL": 0.0, "mm": 0.0, "obs": "No llovió"}, {"date": "2026-10-31", "slot": "07", "mL": 0.0, "mm": 0.0, "obs": "No llovió"}, {"date": "2026-10-31", "slot": "19", "mL": 0.0, "mm": 0.0, "obs": "No llovió"}, {"date": "2026-11-01", "slot": "07", "mL": 0.0, "mm": 0.0, "obs": "No llovió"}, {"date": "2026-11-01", "slot": "19", "mL": 0.0, "mm": 0.0, "obs": "No llovió"}, {"date": "2026-11-02", "slot": "19", "mL": 19.0, "mm": 1.08, "obs": "Acumulado"}, {"date": "2026-11-03", "slot": "19", "mL": 15.0, "mm": 0.85, "obs": "Acumuló"}, {"date": "2026-11-04", "slot": "07", "mL": 0.0, "mm": 0.0, "obs": "No llovió"}, {"date": "2026-11-04", "slot": "19", "mL": 0.0, "mm": 0.0, "obs": "No llovió"}, {"date": "2026-11-05", "slot": "07", "mL": 0.0, "mm": 0.0, "obs": "No llovió"}], "n": 14, "total": 8.72, "wet": 3}, {"code": "HCINPH-03", "place": "Castilla", "lat": -5.1975, "lon": -80.6235, "loc": "aproximada", "D": 16.2, "A": 206.1198940020263, "readings": [{"date": "2026-10-29", "slot": "07", "mL": 0.0, "mm": 0.0, "obs": "No llovió"}, {"date": "2026-10-29", "slot": "19", "mL": 0.0, "mm": 0.0, "obs": "No llovió"}, {"date": "2026-10-30", "slot": "07", "mL": 0.0, "mm": 0.0, "obs": "No llovió"}, {"date": "2026-10-30", "slot": "19", "mL": 0.0, "mm": 0.0, "obs": "No llovió"}, {"date": "2026-10-31", "slot": "07", "mL": 0.0, "mm": 0.0, "obs": "No llovió"}, {"date": "2026-10-31", "slot": "19", "mL": 0.0, "mm": 0.0, "obs": "No llovió"}, {"date": "2026-11-01", "slot": "07", "mL": 0.0, "mm": 0.0, "obs": "No llovió"}, {"date": "2026-11-01", "slot": "19", "mL": 0.0, "mm": 0.0, "obs": "Hubo indicios pero no llovió"}, {"date": "2026-11-02", "slot": "07", "mL": 245.0, "mm": 11.89, "obs": "Llovió desde la madrugada hasta las 7"}, {"date": "2026-11-02", "slot": "19", "mL": 0.0, "mm": 0.0, "obs": "Son las 20:08 y aún no hay lluvia"}, {"date": "2026-11-03", "slot": "07", "mL": 0.0, "mm": 0.0, "obs": "No llovió"}, {"date": "2026-11-03", "slot": "19", "mL": 0.0, "mm": 0.0, "obs": "No llovió"}], "n": 12, "total": 11.89, "wet": 1}, {"code": "IMALOP-04", "place": "", "lat": -5.40478, "lon": -80.748625, "loc": "exacta", "D": 15.0, "A": 176.71458676442586, "readings": [{"date": "2026-10-28", "slot": "19", "mL": 12.0, "mm": 0.68, "obs": "solo cayo neblina"}, {"date": "2026-10-29", "slot": "07", "mL": 27.0, "mm": 1.53, "obs": "solo cayo neblina"}, {"date": "2026-10-29", "slot": "19", "mL": 255.0, "mm": 14.43, "obs": "lluvio con intensidad"}, {"date": "2026-10-30", "slot": "07", "mL": 5.0, "mm": 0.28, "obs": "solo cayo neblina"}, {"date": "2026-10-30", "slot": "19", "mL": 0.0, "mm": 0.0, "obs": "no lluvio"}, {"date": "2026-10-31", "slot": "07", "mL": 0.0, "mm": 0.0, "obs": "no lluvio"}, {"date": "2026-10-31", "slot": "19", "mL": 0.0, "mm": 0.0, "obs": "no lluvio"}], "n": 7, "total": 16.92, "wet": 4}, {"code": "MVJPMS-05", "place": "Piura-Catacaos", "lat": -5.266, "lon": -80.675, "loc": "aproximada", "D": 15.26, "A": 182.89378535477164, "readings": [{"date": "2026-10-26", "slot": "19", "mL": 0.0, "mm": 0.0, "obs": "No llovió"}, {"date": "2026-10-27", "slot": "07", "mL": 0.0, "mm": 0.0, "obs": "No llovió"}, {"date": "2026-10-27", "slot": "19", "mL": 0.0, "mm": 0.0, "obs": "No llovió"}, {"date": "2026-10-28", "slot": "07", "mL": 5.0, "mm": 0.27, "obs": ""}, {"date": "2026-10-28", "slot": "19", "mL": 0.0, "mm": 0.0, "obs": "no llovió"}, {"date": "2026-10-29", "slot": "07", "mL": 0.0, "mm": 0.0, "obs": "No llovió"}, {"date": "2026-10-29", "slot": "19", "mL": 0.0, "mm": 0.0, "obs": "No llovió"}, {"date": "2026-10-30", "slot": "07", "mL": 0.0, "mm": 0.0, "obs": "No llovió"}, {"date": "2026-10-30", "slot": "19", "mL": 0.0, "mm": 0.0, "obs": "No llovió"}, {"date": "2026-11-01", "slot": "07", "mL": 0.0, "mm": 0.0, "obs": "No llovió"}, {"date": "2026-11-01", "slot": "19", "mL": 5.0, "mm": 0.27, "obs": ""}, {"date": "2026-11-02", "slot": "07", "mL": 0.0, "mm": 0.0, "obs": "No llovió"}, {"date": "2026-11-02", "slot": "19", "mL": 11.0, "mm": 0.6, "obs": ""}, {"date": "2026-11-03", "slot": "07", "mL": 0.0, "mm": 0.0, "obs": "No llovió"}, {"date": "2026-11-03", "slot": "19", "mL": 0.0, "mm": 0.0, "obs": "No llovió"}], "n": 15, "total": 1.14, "wet": 3}, {"code": "ESTTAB-06", "place": "", "lat": null, "lon": null, "loc": "sin datos", "D": null, "A": null, "readings": [], "n": 0, "total": null, "wet": 0}, {"code": "AFMCGT-07", "place": "26 de Octubre", "lat": -5.18568, "lon": -80.677355, "loc": "exacta", "D": 15.2, "A": 181.45839167134645, "readings": [{"date": "2026-10-29", "slot": "07", "mL": 0.0, "mm": 0.0, "obs": "No Llovió"}, {"date": "2026-10-29", "slot": "19", "mL": 0.0, "mm": 0.0, "obs": "No Llovió"}, {"date": "2026-10-30", "slot": "07", "mL": 0.0, "mm": 0.0, "obs": "No Llovió"}, {"date": "2026-10-30", "slot": "19", "mL": 0.0, "mm": 0.0, "obs": "No Llovió"}, {"date": "2026-10-31", "slot": "07", "mL": 0.0, "mm": 0.0, "obs": "No Llovió"}, {"date": "2026-10-31", "slot": "19", "mL": 0.0, "mm": 0.0, "obs": "No Llovió"}, {"date": "2026-11-01", "slot": "07", "mL": 0.0, "mm": 0.0, "obs": "No Llovió"}, {"date": "2026-11-01", "slot": "19", "mL": 0.0, "mm": 0.0, "obs": "No Llovió"}, {"date": "2026-11-02", "slot": "07", "mL": 80.0, "mm": 4.41, "obs": ""}, {"date": "2026-11-02", "slot": "19", "mL": 0.0, "mm": 0.0, "obs": "No Llovió"}, {"date": "2026-11-03", "slot": "07", "mL": 0.0, "mm": 0.0, "obs": "No Llovió"}, {"date": "2026-11-03", "slot": "19", "mL": 0.0, "mm": 0.0, "obs": "No Llovió"}, {"date": "2026-11-04", "slot": "07", "mL": 0.0, "mm": 0.0, "obs": "No Llovió"}, {"date": "2026-11-04", "slot": "19", "mL": 0.0, "mm": 0.0, "obs": "No Llovió"}], "n": 14, "total": 4.41, "wet": 1}, {"code": "QTCANM-08", "place": "", "lat": null, "lon": null, "loc": "sin datos", "D": null, "A": null, "readings": [{"date": "2026-10-27", "slot": "07", "mL": 44.0, "mm": null, "obs": ""}, {"date": "2026-10-27", "slot": "19", "mL": 0.0, "mm": null, "obs": ""}, {"date": "2026-10-28", "slot": "07", "mL": 50.0, "mm": null, "obs": ""}, {"date": "2026-10-28", "slot": "19", "mL": 11.0, "mm": null, "obs": ""}, {"date": "2026-10-29", "slot": "07", "mL": 0.0, "mm": null, "obs": ""}, {"date": "2026-10-30", "slot": "07", "mL": 0.0, "mm": null, "obs": ""}], "n": 6, "total": null, "wet": 3, "flag": "tiene volúmenes pero sin diámetro no se calcula la lluvia"}, {"code": "JPBAVS-09", "place": "Piura- Chulucanas", "lat": -5.0985, "lon": -80.17281, "loc": "aproximada", "D": 22.0, "A": 380.1327110843649, "readings": [{"date": "2026-10-28", "slot": "19", "mL": 175.0, "mm": 4.6, "obs": ""}, {"date": "2026-10-29", "slot": "07", "mL": 0.0, "mm": 0.0, "obs": "NO LLOVIO"}, {"date": "2026-10-29", "slot": "19", "mL": 0.0, "mm": 0.0, "obs": "NO LLOVIO"}, {"date": "2026-10-30", "slot": "07", "mL": 0.0, "mm": 0.0, "obs": "NO LLOVIO"}], "n": 4, "total": 4.6, "wet": 1}, {"code": "VADBRR-10", "place": "Piura", "lat": -5.18, "lon": -80.676, "loc": "aproximada", "D": 21.37, "A": 358.6731985260402, "readings": [{"date": "2026-10-27", "slot": "19", "mL": 0.0, "mm": 0.0, "obs": ""}, {"date": "2026-10-28", "slot": "07", "mL": 70.0, "mm": 1.95, "obs": ""}, {"date": "2026-10-28", "slot": "19", "mL": 0.0, "mm": 0.0, "obs": ""}, {"date": "2026-10-29", "slot": "07", "mL": 0.0, "mm": 0.0, "obs": ""}, {"date": "2026-10-29", "slot": "19", "mL": 0.0, "mm": 0.0, "obs": ""}, {"date": "2026-10-30", "slot": "07", "mL": 0.0, "mm": 0.0, "obs": ""}], "n": 6, "total": 1.95, "wet": 1}, {"code": "MELODY-11", "place": "Piura", "lat": -5.18697, "lon": -80.590098, "loc": "exacta", "D": 15.0, "A": 176.71458676442586, "readings": [{"date": "2026-10-28", "slot": "07", "mL": 79.0, "mm": 4.47, "obs": "Noche del martes - Mañana del miércoles"}, {"date": "2026-10-29", "slot": "07", "mL": 0.0, "mm": 0.0, "obs": "No llovió"}, {"date": "2026-10-29", "slot": "19", "mL": 0.0, "mm": 0.0, "obs": "No llovió"}, {"date": "2026-10-30", "slot": "07", "mL": 0.0, "mm": 0.0, "obs": "No llovió"}, {"date": "2026-10-30", "slot": "19", "mL": 0.0, "mm": 0.0, "obs": "No llovió"}, {"date": "2026-10-31", "slot": "07", "mL": 5.0, "mm": 0.28, "obs": "Llovió poco temprano"}, {"date": "2026-10-31", "slot": "19", "mL": 0.0, "mm": 0.0, "obs": "No llovió"}, {"date": "2026-11-01", "slot": "07", "mL": 0.0, "mm": 0.0, "obs": "No llovió"}, {"date": "2026-11-01", "slot": "19", "mL": 0.0, "mm": 0.0, "obs": "No llovió"}, {"date": "2026-11-02", "slot": "07", "mL": 110.0, "mm": 6.22, "obs": "Llovió desde la media noche"}, {"date": "2026-11-02", "slot": "19", "mL": 0.0, "mm": 0.0, "obs": "No llovió después de la medición de la mañana"}, {"date": "2026-11-03", "slot": "07", "mL": 0.0, "mm": 0.0, "obs": "No llovió"}, {"date": "2026-11-03", "slot": "19", "mL": 0.0, "mm": 0.0, "obs": "No llovió"}, {"date": "2026-11-04", "slot": "07", "mL": 0.0, "mm": 0.0, "obs": "No llovió"}, {"date": "2026-11-04", "slot": "19", "mL": 0.0, "mm": 0.0, "obs": "No llovió"}], "n": 15, "total": 10.97, "wet": 3}, {"code": "FLSIFA-12", "place": "Piura", "lat": null, "lon": null, "loc": "sin datos", "D": null, "A": null, "readings": [{"date": "2026-10-26", "slot": "07", "mL": 0.0, "mm": null, "obs": "no llovio"}, {"date": "2026-10-29", "slot": "07", "mL": 50.0, "mm": null, "obs": ""}, {"date": "2026-10-30", "slot": "07", "mL": 0.0, "mm": null, "obs": "no llovio"}], "n": 3, "total": null, "wet": 1}, {"code": "XKLBVZ-13", "place": "", "lat": null, "lon": null, "loc": "sin datos", "D": null, "A": null, "readings": [], "n": 0, "total": null, "wet": 0}, {"code": "TRASHX-14", "place": "Piura", "lat": -5.1433504, "lon": -80.64085, "loc": "exacta", "D": 10.0, "A": 78.53981633974483, "readings": [{"date": "2026-10-28", "slot": "07", "mL": 78.5, "mm": 9.99, "obs": ""}, {"date": "2026-10-29", "slot": "19", "mL": 0.0, "mm": 0.0, "obs": "no llovió"}, {"date": "2026-10-30", "slot": "19", "mL": 0.0, "mm": 0.0, "obs": "no llovió"}, {"date": "2026-10-31", "slot": "07", "mL": 0.0, "mm": 0.0, "obs": "no llovió"}, {"date": "2026-11-01", "slot": "07", "mL": 0.0, "mm": 0.0, "obs": "no llovió"}, {"date": "2026-11-03", "slot": "07", "mL": 0.0, "mm": 0.0, "obs": "no llovió"}, {"date": "2026-11-04", "slot": "07", "mL": 0.0, "mm": 0.0, "obs": "no llovío"}], "n": 7, "total": 9.99, "wet": 1, "flag": "revisar el diámetro: con boca de 10 cm marcó el doble que sus vecinos el 28 oct"}, {"code": "CHIRIV-15", "place": "", "lat": null, "lon": null, "loc": "sin datos", "D": null, "A": null, "readings": [], "n": 0, "total": null, "wet": 0}, {"code": "WFTJK-16", "place": "", "lat": null, "lon": null, "loc": "sin datos", "D": null, "A": null, "readings": [], "n": 0, "total": null, "wet": 0}, {"code": "FRIPFO-17", "place": "", "lat": null, "lon": null, "loc": "sin datos", "D": null, "A": null, "readings": [], "n": 0, "total": null, "wet": 0}];
+const BASE = {"rings": [[[-80.568, -5.4867], [-80.6367, -5.4861], [-80.6353, -5.4504], [-80.7054, -5.4295], [-80.7004, -5.4062], [-80.6499, -5.3968], [-80.5802, -5.4203], [-80.5256, -5.4211], [-80.568, -5.4867]], [[-80.7571, -5.4445], [-80.7912, -5.4839], [-80.8826, -5.5479], [-80.92, -5.4769], [-80.92, -5.331], [-80.7492, -5.4134], [-80.7571, -5.4445]], [[-80.5802, -5.4203], [-80.6499, -5.3968], [-80.6778, -5.3734], [-80.6992, -5.3132], [-80.6407, -5.3211], [-80.5883, -5.3013], [-80.5148, -5.3003], [-80.5265, -5.3512], [-80.5256, -5.4211], [-80.5802, -5.4203]], [[-80.8493, -5.2984], [-80.8056, -5.3386], [-80.7241, -5.3522], [-80.7004, -5.4062], [-80.7054, -5.4295], [-80.7216, -5.4214], [-80.7492, -5.4134], [-80.92, -5.331], [-80.92, -5.2481], [-80.8596, -5.2814], [-80.8493, -5.2984]], [[-80.6778, -5.3734], [-80.6499, -5.3968], [-80.7004, -5.4062], [-80.7241, -5.3522], [-80.8056, -5.3386], [-80.8493, -5.2984], [-80.8277, -5.225], [-80.801, -5.2127], [-80.7505, -5.291], [-80.6992, -5.3132], [-80.6778, -5.3734]], [[-80.568, -5.4867], [-80.5526, -5.4923], [-80.5382, -5.58], [-80.6679, -5.58], [-80.7653, -5.5363], [-80.7684, -5.5128], [-80.7637, -5.493], [-80.7017, -5.4772], [-80.6367, -5.4861], [-80.568, -5.4867]], [[-80.7684, -5.5128], [-80.7653, -5.5363], [-80.6679, -5.58], [-80.8716, -5.58], [-80.8826, -5.5479], [-80.7912, -5.4839], [-80.7684, -5.5128]], [[-80.7542, -5.4494], [-80.7637, -5.493], [-80.7684, -5.5128], [-80.7912, -5.4839], [-80.7571, -5.4445], [-80.7542, -5.4494]], [[-80.6353, -5.4504], [-80.6367, -5.4861], [-80.7017, -5.4772], [-80.7637, -5.493], [-80.7542, -5.4494], [-80.7216, -5.4214], [-80.7054, -5.4295], [-80.6353, -5.4504]], [[-80.7542, -5.4494], [-80.7571, -5.4445], [-80.7492, -5.4134], [-80.7216, -5.4214], [-80.7542, -5.4494]], [[-80.0354, -5.1783], [-80.03, -5.1868], [-80.03, -5.5763], [-80.0839, -5.5604], [-80.1259, -5.5108], [-80.2599, -5.3304], [-80.1534, -5.1708], [-80.0925, -5.1622], [-80.0354, -5.1783]], [[-80.5611, -5.2604], [-80.5169, -5.2356], [-80.365, -5.2324], [-80.323, -5.2905], [-80.2599, -5.3304], [-80.1259, -5.5108], [-80.0839, -5.5604], [-80.03, -5.5763], [-80.03, -5.58], [-80.5382, -5.58], [-80.5526, -5.4923], [-80.568, -5.4867], [-80.5256, -5.4211], [-80.5265, -5.3512], [-80.5148, -5.3003], [-80.5883, -5.3013], [-80.6407, -5.3211], [-80.6992, -5.3132], [-80.7505, -5.291], [-80.801, -5.2127], [-80.7681, -5.152], [-80.7077, -5.1702], [-80.6898, -5.203], [-80.6485, -5.2264], [-80.5611, -5.2604]], [[-80.0354, -5.1783], [-80.0925, -5.1622], [-80.03, -5.0909], [-80.03, -5.1868], [-80.0354, -5.1783]], [[-80.365, -5.2324], [-80.5169, -5.2356], [-80.5611, -5.2604], [-80.6485, -5.2264], [-80.6143, -5.1568], [-80.6317, -5.0999], [-80.6107, -5.0721], [-80.6023, -4.9751], [-80.502, -4.9835], [-80.421, -5.0576], [-80.4462, -5.1443], [-80.3381, -5.1372], [-80.365, -5.2324]], [[-80.6107, -5.0721], [-80.6317, -5.0999], [-80.6143, -5.1568], [-80.6485, -5.2264], [-80.6898, -5.203], [-80.7077, -5.1702], [-80.7681, -5.152], [-80.7446, -5.1301], [-80.7003, -5.0176], [-80.6977, -4.9601], [-80.6035, -4.96], [-80.6023, -4.9751], [-80.6107, -5.0721]], [[-80.0826, -5.0045], [-80.0388, -5.0264], [-80.03, -5.0264], [-80.03, -5.0909], [-80.0925, -5.1622], [-80.1534, -5.1708], [-80.2599, -5.3304], [-80.323, -5.2905], [-80.365, -5.2324], [-80.3381, -5.1372], [-80.2896, -5.0715], [-80.2215, -5.0504], [-80.2566, -4.9914], [-80.2403, -4.96], [-80.2054, -4.96], [-80.1764, -4.9718], [-80.1561, -4.96], [-80.0943, -4.96], [-80.0826, -5.0045]], [[-80.6977, -4.9601], [-80.7003, -5.0176], [-80.7446, -5.1301], [-80.7681, -5.152], [-80.801, -5.2127], [-80.8277, -5.225], [-80.8493, -5.2984], [-80.8596, -5.2814], [-80.8482, -5.0931], [-80.8506, -4.96], [-80.6977, -4.9601]], [[-80.8482, -5.0931], [-80.8596, -5.2814], [-80.92, -5.2481], [-80.92, -4.96], [-80.8506, -4.96], [-80.8482, -5.0931]], [[-80.0388, -5.0264], [-80.0826, -5.0045], [-80.0943, -4.96], [-80.03, -4.96], [-80.03, -5.0264], [-80.0388, -5.0264]], [[-80.1764, -4.9718], [-80.2054, -4.96], [-80.1561, -4.96], [-80.1764, -4.9718]], [[-80.2566, -4.9914], [-80.2215, -5.0504], [-80.2896, -5.0715], [-80.3381, -5.1372], [-80.4462, -5.1443], [-80.421, -5.0576], [-80.502, -4.9835], [-80.6023, -4.9751], [-80.6035, -4.96], [-80.2403, -4.96], [-80.2566, -4.9914]], [[-80.6977, -4.9601], [-80.6977, -4.96], [-80.6974, -4.96], [-80.6977, -4.9601]]], "labels": [{"name": "El Tallan", "lon": -80.6041, "lat": -5.44}, {"name": "Vice", "lon": -80.8366, "lat": -5.4289}, {"name": "Cura Mori", "lon": -80.6041, "lat": -5.3623}, {"name": "La Union", "lon": -80.8276, "lat": -5.3454}, {"name": "La Arena", "lon": -80.7788, "lat": -5.3058}, {"name": "Cristo Nos Valga", "lon": -80.6571, "lat": -5.5245}, {"name": "Sechura", "lon": -80.808, "lat": -5.5245}, {"name": "Rinconada Llicuar", "lon": -80.7671, "lat": -5.4667}, {"name": "Bernal", "lon": -80.6966, "lat": -5.4638}, {"name": "Bellavista De La Union", "lon": -80.7446, "lat": -5.433}, {"name": "La Matanza", "lon": -80.1115, "lat": -5.4206}, {"name": "Catacaos", "lon": -80.3723, "lat": -5.3861}, {"name": "Morropon", "lon": -80.0456, "lat": -5.1266}, {"name": "Castilla", "lon": -80.5324, "lat": -5.1185}, {"name": "Piura", "lon": -80.6742, "lat": -5.086}, {"name": "Chulucanas", "lon": -80.2116, "lat": -5.1497}, {"name": "Miguel Checa", "lon": -80.7933, "lat": -5.1116}, {"name": "La Huaca", "lon": -80.8864, "lat": -5.1706}, {"name": "Frias", "lon": -80.0592, "lat": -4.9822}, {"name": "Tambo Grande", "lon": -80.3289, "lat": -5.054}, {"name": "Sullana", "lon": -80.6976, "lat": -4.96}]};
+const SEN = [{"name": "Aeropuerto de Piura", "agency": "OMM 84401", "kind": "Estación sinóptica oficial", "place": "Castilla, Piura", "lat": -5.2056, "lon": -80.6164, "daily": {"2026-10-26T07": 0.0, "2026-10-27T07": 0.0, "2026-10-28T07": 4.0, "2026-10-29T07": 0.4, "2026-10-30T07": 0.0, "2026-10-31T07": 0.0, "2026-11-01T07": 0.0, "2026-11-02T07": 4.0, "2026-11-03T07": 0.0, "2026-11-04T07": 0.0, "2026-11-05T07": 0.0}, "source": "Lluvia de 24 h cerrada cada día a las 07:00 (12:00 UTC), del parte sinóptico internacional publicado por Ogimet. El 27 oct marcó «traza» (menos de 0.1 mm)."}, {"name": "Miraflores", "agency": "SENAMHI", "kind": "Estación automática", "place": "Castilla, Piura", "lat": -5.17528, "lon": -80.61654, "daily": {"2026-11-01T19": 0.0, "2026-11-02T07": 6.0, "2026-11-02T19": 0.0, "2026-11-03T07": 0.0, "2026-11-03T19": 0.0, "2026-11-04T07": 0.0, "2026-11-04T19": 0.0, "2026-11-05T07": 0.0}, "source": "Estación automática del SENAMHI: lluvia hora por hora del 1 al 5 de noviembre, sumada en ventanas de 07:00 y 19:00. La hora más lluviosa fue el 02/11 a las 01:00 con 4.0 mm."}, {"name": "San Miguel", "agency": "SENAMHI", "kind": "Estación automática", "place": "Catacaos, Piura", "lat": -5.24619, "lon": -80.68425, "daily": {"2026-11-01T19": 0.0, "2026-11-02T07": 1.5, "2026-11-02T19": 0.0, "2026-11-03T07": 0.0, "2026-11-03T19": 0.0, "2026-11-04T07": 0.0, "2026-11-04T19": 0.0, "2026-11-05T07": 0.0}, "source": "Estación automática del SENAMHI: lluvia hora por hora del 1 al 5 de noviembre, sumada en ventanas de 07:00 y 19:00. La hora más lluviosa fue el 02/11 a las 07:00 con 0.5 mm."}, {"name": "Bernal", "agency": "SENAMHI", "kind": "Estación automática", "place": "Bernal, Sechura", "lat": -5.45449, "lon": -80.74262, "daily": {"2026-11-01T19": 0.0, "2026-11-02T07": 1.3, "2026-11-02T19": 0.0, "2026-11-03T07": 0.0, "2026-11-03T19": 0.0, "2026-11-04T07": 0.0, "2026-11-04T19": 0.0, "2026-11-05T07": 0.0}, "source": "Estación automática del SENAMHI: lluvia hora por hora del 1 al 5 de noviembre, sumada en ventanas de 07:00 y 19:00. La hora más lluviosa fue el 02/11 a las 07:00 con 1.3 mm."}, {"name": "Chulucanas (incompleto)", "agency": "SENAMHI", "kind": "Estación automática", "place": "Chulucanas, Morropón", "lat": -5.10844, "lon": -80.16954, "daily": {"2026-11-01T19": 0.0, "2026-11-02T19": 0.1, "2026-11-03T19": 0.0, "2026-11-04T19": 0.0, "2026-11-05T07": 0.0}, "source": "Estación automática del SENAMHI: lluvia hora por hora del 1 al 5 de noviembre, sumada en ventanas de 07:00 y 19:00. La hora más lluviosa fue el 02/11 a las 15:00 con 0.1 mm. Hay horas sin registro (S/D), así que sus totales son incompletos."}];
+const NAMES = ["Elera Valverde Vania", "Quispe Sernaque Cielo", "Chunga Imán Hellen", "Portal Herrera Neyli", "Imán Martinez Jhonatan", "López Mondragón Stalin", "Vilchez Juárez Mayra", "Mejía Silva Pierina", "Mogollón Gutierrez Ariana", "Criollo Tomapasca Fabian", "Pasache Bruno Jimena", "Vilela Saavedra Aymar", "Berru Rosado Aaron", "Diaz Ramos Viviana", "Pamela Acevedo Ocaña", "Bélgica Ortega Delgado", "Carrasco Torres Fiorella", "Sullon Inga Fiorella", "Ramos Vilela Medaly", "Villegas Roa Jairo Arian", "Edinson Romero Pasiche"];
+
+const EVENTS = [
+  {id:'total', name:'Todo el periodo'},
+  {id:'e1', name:'27–28 oct', from:'2026-10-27T19', to:'2026-10-28T19'},
+  {id:'e2', name:'29–30 oct', from:'2026-10-28T19', to:'2026-10-30T07'},
+  {id:'e3', name:'1–2 nov',  from:'2026-11-01T07', to:'2026-11-02T19'},
+];
+// a reading dated D at slot S covers the 12 h ending D S; place it by its end time
+const endKey = r => r.date + 'T' + r.slot;
+function inEvent(r, ev){ if(ev.id==='total') return true; const k=endKey(r); return k>ev.from && k<=ev.to; }
+function sumEv(st, ev){
+  if(!st.A) return null;
+  const rs = st.readings.filter(r=>inEvent(r,ev));
+  if(!rs.length) return null;
+  return rs.reduce((a,r)=>a+(r.mm||0),0);
+}
+function senEv(s, ev){
+  if(!s.daily) return null;
+  let tot=0, n=0;
+  for(const [k,v] of Object.entries(s.daily)){ if(v==null) continue; const r={date:k.slice(0,10),slot:k.slice(11,13)}; if(inEvent(r,ev)){tot+=v;n++;} }
+  return n?tot:null;
+}
+const fmt = (v,d=1) => v==null ? '—' : v.toLocaleString('es-PE',{minimumFractionDigits:d,maximumFractionDigits:d});
+
+const NS='http://www.w3.org/2000/svg';
+const el=(t,a,p)=>{const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);p.appendChild(e);return e;};
+const KX=Math.cos(5.25*Math.PI/180);
+function makeMap(id, W,E,S,N, opts){
+  const svg=document.getElementById(id), VW=1000, VH=Math.round(VW*(N-S)/((E-W)*KX));
+  svg.setAttribute('viewBox',`0 0 ${VW} ${VH}`);
+  const P=(lat,lon)=>[(lon-W)/(E-W)*VW,(N-lat)/(N-S)*VH];
+  return {svg,VW,VH,P,W,E,S,N,...opts,layer:null};
+}
+const MAPS=[
+  makeMap('map',-80.90,-80.05,-5.56,-4.98,{rMax:44,towns:['Piura','Castilla','Catacaos','Chulucanas','La Arena','Cura Mori','Tambo Grande','La Union','Sechura','La Matanza','Vice'],scaleKm:10,box:[-80.73,-80.55,-5.285,-5.125]}),
+  makeMap('map2',-80.73,-80.55,-5.285,-5.125,{rMax:60,towns:[],extra:[['Piura',-5.1945,-80.6328],['Castilla',-5.2200,-80.6100],['Veintiséis de Octubre',-5.1580,-80.7000],['Catacaos',-5.2780,-80.6780]],scaleKm:2}),
+];
+
+let current = 'total', selected = null;
+
+function drawBase(M){
+  const g=el('g',{},M.svg);
+  BASE.rings.forEach(r=>el('path',{d:'M'+r.map(([lon,lat])=>M.P(lat,lon).map(v=>v.toFixed(1)).join(',')).join('L')+'Z',fill:'var(--land)',stroke:'var(--land-line)','stroke-width':1.2},g));
+  BASE.labels.filter(l=>M.towns.includes(l.name)).forEach(l=>{const [x,y]=M.P(l.lat,l.lon);const t=el('text',{x,y,'text-anchor':'middle',class:'lbl'},g);t.textContent=l.name;});
+  (M.extra||[]).forEach(([n,lat,lon])=>{const [x,y]=M.P(lat,lon);const t=el('text',{x,y,'text-anchor':'middle',class:'lbl town'},g);t.textContent=n;});
+  if(M.box){const [w,e,s,n]=M.box;const [x0,y0]=M.P(n,w),[x1,y1]=M.P(s,e);el('rect',{x:x0,y:y0,width:x1-x0,height:y1-y0,fill:'none',stroke:'var(--muted)','stroke-dasharray':'4 4','stroke-width':1.2},g);
+    const t=el('text',{x:x1+6,y:y1-4,class:'lbl'},g);t.textContent='zoom ↓';}
+  const kmW=M.scaleKm/(111.32*KX)/(M.E-M.W)*M.VW, x0=30, y0=M.VH-26;
+  el('line',{x1:x0,y1:y0,x2:x0+kmW,y2:y0,stroke:'var(--ink)','stroke-width':3},g);
+  const t=el('text',{x:x0,y:y0-8,class:'lbl'},g); t.textContent=M.scaleKm+' km';
+  const n=el('text',{x:M.VW-34,y:40,class:'lbl town','text-anchor':'middle'},g); n.textContent='N ↑';
+}
+
+function maxVal(){
+  const ev=EVENTS.find(e=>e.id===current); let m=1;
+  DATA.forEach(s=>{const v=sumEv(s,ev); if(v>m)m=v;});
+  SEN.forEach(s=>{const v=senEv(s,ev); if(v>m)m=v;});
+  return m;
+}
+function drawStations(){ MAPS.forEach(drawLayer); }
+function inside(M,lat,lon){return lon>=M.W&&lon<=M.E&&lat>=M.S&&lat<=M.N;}
+function drawLayer(M){
+  if(M.layer) M.layer.remove();
+  const layer=M.layer=el('g',{},M.svg);
+  const ev=EVENTS.find(e=>e.id===current), m=maxVal(), rMax=M.rMax, r0=6;
+  const R=v=> v==null? r0 : r0 + (rMax-r0)*Math.sqrt(v/m);
+  SEN.filter(s=>inside(M,s.lat,s.lon)).forEach(s=>{
+    const [x,y]=M.P(s.lat,s.lon), v=senEv(s,ev), h=(v==null?7:Math.max(7,R(v)*0.8));
+    const g=el('g',{class:'st',tabindex:0,role:'button','aria-label':'Estación oficial '+s.name},layer);
+    el('rect',{x:x-h,y:y-h,width:2*h,height:2*h,fill:'var(--off)','fill-opacity':.25,stroke:'var(--off)','stroke-width':2},g);
+    const inBoxS = M.box && s.lon>=M.box[0]&&s.lon<=M.box[1]&&s.lat>=M.box[2]&&s.lat<=M.box[3];
+    if(!inBoxS){const t=el('text',{x:x+h+5,y:y+4,class:'val off'},g); t.textContent=s.name+' · '+(v==null?'—':fmt(v)+' mm');}
+    g.addEventListener('click',()=>select({sen:s})); g.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();select({sen:s});}});
+  });
+  const placed=[];
+  const list=DATA.filter(s=>s.lat!=null&&inside(M,s.lat,s.lon)).map(s=>({s,v:sumEv(s,ev)})).sort((a,b)=>(b.v||0)-(a.v||0));
+  list.forEach(({s,v})=>{
+    const [x,y]=M.P(s.lat,s.lon), r=R(v);
+    const g=el('g',{class:'st',tabindex:0,role:'button','aria-label':s.code+' '+(v==null?'sin lecturas':fmt(v)+' mm')},layer);
+    const empty = v===0||v==null;
+    el('circle',{cx:x,cy:y,r:r,fill:empty?'var(--surface)':'var(--rain)','fill-opacity':empty?1:.55,stroke:'var(--rain-deep)','stroke-width':selected===s.code?3.5:1.6,'stroke-dasharray':s.loc==='aproximada'?'5 4':'none'},g);
+    const inBox = M.box && s.lon>=M.box[0]&&s.lon<=M.box[1]&&s.lat>=M.box[2]&&s.lat<=M.box[3];
+    if(!inBox){
+      let ly=y-r-6; if(placed.some(p=>Math.abs(p[0]-x)<150&&Math.abs(p[1]-ly)<26)) ly=y+r+18;
+      placed.push([x,ly]);
+      const t=el('text',{x:x,y:ly,'text-anchor':'middle',class:'val'},g); t.textContent=s.code.slice(0,6)+' · '+(v==null?'—':fmt(v)+' mm');}
+    g.addEventListener('click',()=>select({st:s})); g.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();select({st:s});}});
+  });
+}
+
+function select(o){
+  const p=document.getElementById('panel'); const ev=EVENTS.find(e=>e.id===current);
+  if(o.st){
+    const s=o.st; selected=s.code; drawStations();
+    const v=sumEv(s,ev);
+    const rows=s.readings.filter(r=>inEvent(r,ev)&&r.mL>0).map(r=>`<tr><td>${r.date.slice(8)}/${r.date.slice(5,7)} ${r.slot}:00</td><td class="n">${fmt(r.mL,0)} mL</td><td class="n">${fmt(r.mm,2)} mm</td></tr>`).join('');
+    p.innerHTML=`<div class="eyebrow">Estación CFU</div><h3>${s.code}</h3>
+      <div class="meta">${s.place||'Sin dirección'} · ubicación ${s.loc}${s.D?` · boca D = ${fmt(s.D,1)} cm`:''}</div>
+      <div class="big">${fmt(v)} <small>mm · ${ev.name.toLowerCase()}</small></div>
+      <div class="meta">${s.n} lecturas registradas, ${s.wet} con agua.</div>
+      ${rows?`<table><tr><th>Lectura</th><th class="n">Volumen</th><th class="n">Lluvia</th></tr>${rows}</table>`:'<div class="meta">Sin lluvia medida en este periodo.</div>'}
+      ${s.flag?`<span class="pill warn">${s.flag}</span>`:''}`;
+  } else if(o.sen){
+    const s=o.sen; selected=null; drawStations();
+    const v=senEv(s,ev);
+    p.innerHTML=`<div class="eyebrow">${s.kind} · ${s.agency}</div><h3>${s.name}</h3>
+      <div class="meta">${s.place}</div>
+      <div class="big" style="color:var(--off)">${fmt(v)} <small>mm · ${ev.name.toLowerCase()}</small></div>
+      <div class="meta">${s.source||''}</div>`;
+  } else {
+    p.innerHTML=`<div class="eyebrow">Cómo leer el mapa</div><h3>Toque una estación</h3>
+      <p class="meta" style="margin:0">Verá la lluvia del periodo elegido, cada lectura con agua (volumen en mL y lluvia en mm) y el diámetro de la boca usado en el cálculo P = 10·V/A.</p>
+      <p class="meta" style="margin:0">Los círculos punteados tienen ubicación aproximada porque el grupo aún no puso sus coordenadas.</p>`;
+  }
+}
+
+function buildSeg(){
+  const seg=document.getElementById('seg');
+  EVENTS.forEach(ev=>{const b=document.createElement('button');b.type='button';b.textContent=ev.name;b.setAttribute('aria-pressed',ev.id===current);
+    b.addEventListener('click',()=>{current=ev.id;[...seg.children].forEach(c=>c.setAttribute('aria-pressed',c===b));drawStations();select(selected?{st:DATA.find(s=>s.code===selected)}:{});});seg.appendChild(b);});
+}
+
+function buildStats(){
+  const withData=DATA.filter(s=>s.total!=null&&s.n>0);
+  const top=withData.slice().sort((a,b)=>b.total-a.total)[0];
+  const e3=EVENTS[3]; const mel=DATA.find(s=>s.code==='MELODY-11'); const mir=SEN.find(s=>s.name.startsWith('Miraflores'));
+  const mv=sumEv(mel,e3), sv=mir?senEv(mir,e3):null;
+  const nRead=DATA.reduce((a,s)=>a+s.n,0);
+  document.getElementById('stats').innerHTML=[
+    [`<span class="c">${withData.length}</span><small> / ${DATA.length}</small>`,'equipos ya miden lluvia calculable'],
+    [`${nRead}`,'lecturas subidas por los estudiantes'],
+    [`<span class="c">${fmt(mv)}</span><small> vs </small><span class="a">${fmt(sv)}</span>`,`mm: MELODY-11 (casero) frente al SENAMHI Miraflores el 1–2 nov`],
+    [`${fmt(top.total)}<small> mm</small>`,`mayor acumulado de la red (${top.code})`],
+  ].map(([v,k])=>`<div class="hstat"><div class="v">${v}</div><div class="k">${k}</div></div>`).join('');
+}
+
+function buildTeam(){
+  const names=NAMES.slice().sort((a,b)=>a.localeCompare(b,'es'));
+  document.getElementById('teamnote').textContent=`${names.length} estudiantes de Ingeniería Agroindustrial registrados hasta hoy en ${DATA.filter(s=>s.n>0).length} equipos con lecturas. Cada dato del mapa salió de su probeta.`;
+  document.getElementById('names').innerHTML=names.map(n=>`<span>${n}</span>`).join('');
+}
+
+function rain(){
+  const c=document.getElementById('rain'); if(!c) return; const x=c.getContext('2d');
+  const still=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let W,H,drops=[];
+  const size=()=>{const r=c.getBoundingClientRect(),d=Math.min(2,devicePixelRatio||1);W=c.width=r.width*d;H=c.height=r.height*d;
+    drops=Array.from({length:Math.round(r.width/9)},()=>({x:Math.random()*W,y:Math.random()*H,l:(8+Math.random()*18)*d,v:(5+Math.random()*7)*d,a:.15+Math.random()*.35}));};
+  const draw=()=>{x.clearRect(0,0,W,H);x.lineWidth=Math.min(2,devicePixelRatio||1);
+    for(const p of drops){x.strokeStyle=`rgba(34,211,238,${p.a})`;x.beginPath();x.moveTo(p.x,p.y);x.lineTo(p.x-p.l*.18,p.y+p.l);x.stroke();
+      if(!still){p.y+=p.v;p.x-=p.v*.18;if(p.y>H){p.y=-p.l;p.x=Math.random()*W*1.1;}}}
+    if(!still) requestAnimationFrame(draw);};
+  size(); addEventListener('resize',size); draw();
+}
+
+function dist(a,b){const R=6371,t=Math.PI/180;const dl=(b.lat-a.lat)*t,dn=(b.lon-a.lon)*t;const h=Math.sin(dl/2)**2+Math.cos(a.lat*t)*Math.cos(b.lat*t)*Math.sin(dn/2)**2;return 2*R*Math.asin(Math.sqrt(h));}
+
+function buildCmp(){
+  const tb=document.getElementById('cmp');
+  let html='<tr><th>Evento</th><th>Estación</th><th class="n">Distancia</th><th class="n">Lluvia</th><th>Comparación</th></tr>';
+  SEN.forEach(s=>{
+    const near=DATA.filter(d=>d.lat!=null&&d.A).map(d=>({d,km:dist(s,d)})).filter(x=>x.km<=8).sort((a,b)=>a.km-b.km);
+    if(!near.length) return;
+    const head=`<tr class="grp"><td colspan="5">${s.name} <span class="pill off">${s.agency}</span> <span style="font:400 13px var(--f-body);color:var(--muted)">${s.place}</span></td></tr>`;
+    let body='';
+    EVENTS.slice(1).forEach(ev=>{
+      const sv=senEv(s,ev); const vals=near.map(x=>({...x,v:sumEv(x.d,ev)})).filter(x=>x.v!=null);
+      if(sv==null || !vals.length) return;
+      const m=Math.max(sv||0,...vals.map(x=>x.v),2);
+      const rows=[{name:'Oficial · '+s.name,km:null,v:sv,off:true},...vals.map(x=>({name:x.d.code+(x.d.loc==='aproximada'?' *':''),km:x.km,v:x.v}))];
+      rows.forEach((r,i)=>{
+        body+=`<tr>${i===0?`<td rowspan="${rows.length}"><b>${ev.name}</b></td>`:''}<td>${r.name}</td><td class="n">${r.km==null?'':fmt(r.km)+' km'}</td><td class="n">${r.v==null?'pendiente':fmt(r.v)+' mm'}</td>
+          <td><div class="bars"><div class="bar ${r.off?'off':''}" style="width:${r.v==null?0:Math.max(1,r.v/m*100)}%"></div></div></td></tr>`;
+      });
+    });
+    if(body) html+=head+body;
+  });
+  tb.innerHTML=html;
+  document.getElementById('cmpnote').textContent = '* Ubicación aproximada: el grupo aún no registró sus coordenadas.';
+}
+
+function buildLiters(){
+  const e3=EVENTS[3]; const s=DATA.find(d=>d.code==='HCINPH-03'); const mm=sumEv(s,e3);
+  const castillaKm2=662; // superficie del distrito de Castilla
+  const litros=mm*castillaKm2*1e6; // 1 mm = 1 L/m²
+  const piscinas=litros/2.5e6;
+  document.getElementById('liters').innerHTML=`<div class="eyebrow" style="color:var(--rain-soft)">Para la clase</div>
+   <h2 id="t-lit" style="color:var(--surface)">¿Cuánta agua es ${fmt(mm)} mm?</h2>
+   <div class="big">${fmt(litros/1e9,1)} <small style="color:var(--rain-soft)">mil millones de litros</small></div>
+   <p>El grupo HCINPH-03 midió ${fmt(mm)} mm en Castilla la madrugada del 2 de noviembre. Como 1 mm equivale a 1 litro por metro cuadrado, si esa lluvia cayó parejo sobre los ${castillaKm2} km² del distrito, son unos ${fmt(litros/1e9,1)} mil millones de litros: cerca de ${Math.round(piscinas).toLocaleString('es-PE')} piscinas olímpicas en una sola noche. Sobre un techo de 100 m² son ${fmt(mm*100,0)} litros.</p>`;
+}
+
+function buildIssues(){
+  const out=[];
+  DATA.forEach(s=>{
+    const miss=[]; if(!s.D) miss.push('diámetro de la boca'); if(s.loc!=='exacta') miss.push('latitud y longitud'); if(s.n===0) miss.push('lecturas');
+    if(s.flag) miss.push(s.flag);
+    if(miss.length) out.push(`<div class="issue"><b>${s.code}</b><span>Falta: ${miss.join(', ')}.</span></div>`);
+  });
+  document.getElementById('issues').innerHTML=out.join('');
+}
+
+(document.getElementById('corte')||{}).textContent = "5 nov 2026, 09:25";
+document.getElementById('foot').innerHTML = "Proyecto del curso Concepción Física del Universo (FI 1363), Universidad Nacional de Piura. Fuentes: hoja compartida <b>Red de pluviómetros CFU 2026</b> (lecturas de los alumnos, P = 10·V/A) y estación sinóptica del aeropuerto de Piura (OMM 84401), resumen diario de <a href=\"https://www.ogimet.com/cgi-bin/gsynres?ind=84401&lang=en\" target=\"_blank\" rel=\"noopener\">Ogimet</a>. Límites distritales: INEI vía peru-geojson (mapa esquemático, sin el distrito Veintiséis de Octubre).";
+buildSeg(); MAPS.forEach(drawBase); drawStations(); buildStats(); rain(); buildCmp(); buildLiters(); select({});
+</script>
+
+</body>
+</html>
