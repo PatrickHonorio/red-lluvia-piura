@@ -1327,7 +1327,7 @@ function buildStSel(){
   const off=SEN.map((s,i)=>`<option value="s:${i}">${s.name} · ${s.agency==='SENAMHI'?'SENAMHI':'aeropuerto'}</option>`).join('');
   sel.innerHTML=`<optgroup label="Red de pluviómetros">${red}</optgroup><optgroup label="Estaciones oficiales">${off}</optgroup>`;
   sel.addEventListener('change',drawSt); document.getElementById('stcmp').addEventListener('change',drawSt);
-  document.getElementById('stcsv').addEventListener('click',csvSt); drawSt();}
+  const cb=document.getElementById('stcsv'); if(/github\.io$/.test(location.hostname)) cb.addEventListener('click',csvSt); else cb.remove(); drawSt();}
 window.showSt=id=>{const sel=document.getElementById('stsel'); sel.value=id; drawSt(); if(MAP) MAP.closePopup(); document.getElementById('t-st').scrollIntoView({behavior:'smooth',block:'start'});};
 
 (document.getElementById('corte')||{}).textContent = "";
