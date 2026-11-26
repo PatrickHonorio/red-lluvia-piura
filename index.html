@@ -886,6 +886,20 @@ svg.leaflet-image-layer.leaflet-interactive path {
 .big-note{font-size:17px;color:var(--ink)} .big-note b{color:var(--rain);font-size:22px}
 .scgrid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:16px;align-items:center}
 @media (max-width:760px){.scgrid{grid-template-columns:minmax(0,1fr)}}
+.stbar{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;margin:0 0 12px}
+.stbar label{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--muted);min-width:0;max-width:100%}
+.stbar select{flex:1;min-width:0;max-width:100%;font:600 15px var(--f-body);padding:8px 10px;border-radius:6px;border:1px solid var(--line);background:var(--surface);color:var(--ink)}
+.stbtn{font:600 14px var(--f-body);padding:8px 14px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
+.stbtn:hover{border-color:var(--rain)}
+.sthead{text-align:center;font:14px/1.5 var(--f-body);color:var(--muted);margin:4px 0 6px}
+.sthead .st-t{font:700 17px var(--f-body);color:var(--ink);letter-spacing:.03em}
+.ststats{display:flex;flex-wrap:wrap;justify-content:center;gap:4px 16px;font-size:13px;color:var(--muted);margin:2px 0 4px}
+.ststats b{color:var(--ink);font-family:var(--f-mono)}
+.stread{min-height:20px;text-align:center;font:13px var(--f-mono);color:var(--ink)}
+.stleg{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 16px;font-size:13px;color:var(--muted);margin-top:6px}
+.stleg i{display:inline-block;width:14px;height:10px;border-radius:2px;margin-right:5px;vertical-align:middle}
+.stleg i.ln{height:0;border-top:2px solid var(--ink);border-radius:0}.stleg i.lo{height:0;border-top:2px dashed var(--off);border-radius:0}
+.pbtn{display:block;width:100%;margin-top:8px;font:600 13px var(--f-body);padding:7px 10px;border-radius:999px;border:0;background:var(--rain);color:var(--surface);cursor:pointer}
 </style>
 </head>
 <body>
@@ -931,6 +945,16 @@ svg.leaflet-image-layer.leaflet-interactive path {
     <aside class="panel"><div class="eyebrow" id="rankt">Ranking</div><div id="rank" class="rank"></div>
       <p class="meta" style="margin:0">Toque un nombre para ubicarlo en el mapa.</p></aside>
   </div>
+</section>
+
+<section aria-labelledby="t-st">
+  <div class="sechead"><div class="eyebrow">Estaciones</div><h2 id="t-st">El gráfico de cada estación</h2>
+  <p class="note">Elija cualquier pluviómetro de la red o estación oficial. Las barras son la lluvia de cada lectura y la línea, la lluvia acumulada, que puede compararse con la estación vecina del otro tipo. En el mapa, cada estación tiene el botón «Ver gráfico».</p></div>
+  <div class="stbar"><label>Estación <select id="stsel"></select></label>
+    <label><input type="checkbox" id="stcmp" checked> <span id="stcmpl">Comparar</span></label>
+    <button type="button" class="stbtn" id="stcsv">Descargar datos (CSV)</button></div>
+  <div class="chartbox"><div class="sthead" id="sthead"></div><div class="stread" id="stread" aria-live="polite"></div>
+    <svg id="stchart" role="img" aria-label="Lluvia de la estación seleccionada"></svg><div class="stleg" id="stleg"></div></div>
 </section>
 
 <section aria-labelledby="t-time">
@@ -1019,7 +1043,7 @@ function popupHTML(s){
    <div class="pv">${fmt(v)}<small> mm · ${ev.name.toLowerCase()}</small></div>
    ${sparkSVG(s)}<div class="pm"><i class="lg n"></i>lectura 07:00 (noche) <i class="lg d"></i>lectura 19:00 (día)</div>
    ${rows?`<table>${rows}</table>`:'<div class="pm">Sin lluvia en este periodo.</div>'}
-   <div class="pm">${s.n} lecturas registradas</div>${s.flag?`<div class="pflag">${s.flag}</div>`:''}</div>`;
+   <div class="pm">${s.n} lecturas registradas</div>${s.flag?`<div class="pflag">${s.flag}</div>`:''}<button type="button" class="pbtn" onclick="showSt('r:${s.code}')">Ver gráfico</button></div>`;
 }
 function senPopup(s){const ev=curEv(),v=senEv(s,ev);
   const nb=DATA.filter(d=>d.lat!=null).map(d=>({d,km:dist(s,d)})).sort((a,b)=>a.km-b.km)[0];
@@ -1029,7 +1053,7 @@ function senPopup(s){const ev=curEv(),v=senEv(s,ev);
    <div class="pv" style="color:var(--off)">${v==null?'—<small> sin dato en este periodo</small>':fmt(v)+'<small> mm · '+ev.name.toLowerCase()+(ev.id==='total'&&partial(s)?' (datos parciales)':'')+'</small>'}</div>
    ${rs.length>1?sparkSVG({readings:rs}):''}<div class="pm" style="display:block">${s.source||''}</div>
    ${nb?`<div class="pm" style="display:block">Pluviómetro estudiantil más cercano: <b>${nb.d.code}</b>, a ${fmt(nb.km)} km.</div>`:''}
-   ${links?`<div class="pm plinks">Datos en la fuente:<br>${links}</div>`:''}</div>`;}
+   ${links?`<div class="pm plinks">Datos en la fuente:<br>${links}</div>`:''}<button type="button" class="pbtn" onclick="showSt('s:${SEN.indexOf(s)}')">Ver gráfico</button></div>`;}
 
 function initMap(){
   MAP=L.map('lmap',{zoomControl:true,scrollWheelZoom:false,tap:true}).setView([-5.20,-80.60],10);
@@ -1080,7 +1104,7 @@ function buildRank(){
 function buildSeg(){
   const seg=document.getElementById('seg');
   EVENTS.forEach(ev=>{const b=document.createElement('button');b.type='button';b.textContent=ev.name;b.setAttribute('aria-pressed',ev.id===current);
-    b.addEventListener('click',()=>{current=ev.id;[...seg.children].forEach(c=>c.setAttribute('aria-pressed',c===b));MAP.closePopup();drawStations();});seg.appendChild(b);});
+    b.addEventListener('click',()=>{current=ev.id;[...seg.children].forEach(c=>c.setAttribute('aria-pressed',c===b));MAP.closePopup();drawStations();drawSt();});seg.appendChild(b);});
 }
 
 function buildTimeline(){
@@ -1212,11 +1236,105 @@ function buildIssues(){
   document.getElementById('issues').innerHTML=out.join('');
 }
 
+// ---------- gráfico de cada estación (ficha al estilo SENAMHI)
+const HR=36e5, D1=864e5;
+const kT=k=>Date.parse(k.slice(0,10)+'T'+k.slice(11,13)+':00:00-05:00');
+const prevK=k=>new Date(Date.parse(k.slice(0,10)+'T12:00:00Z')-D1).toISOString().slice(0,10)+'T19';
+const loc=t=>new Date(t-5*HR);
+const ddmm=t=>{const d=loc(t);return String(d.getUTCDate()).padStart(2,'0')+'/'+String(d.getUTCMonth()+1).padStart(2,'0');};
+const hh=t=>String(loc(t).getUTCHours()).padStart(2,'0')+':00';
+const cap=x=>x?x.charAt(0).toUpperCase()+x.slice(1):x;
+function dms(v,p,n){const a=Math.abs(v);let d=Math.floor(a),m=Math.floor((a-d)*60),s=Math.round(((a-d)*60-m)*60);if(s===60){s=0;m++;}if(m===60){m=0;d++;}return `${d}°${m}'${s}" ${v<0?n:p}`;}
+function senBars(s){const d=s.daily||{};return Object.entries(d).filter(([,v])=>v!=null).map(([k,v])=>({t:kT(k),h:(k.endsWith('T19')||d[prevK(k)]!=null)?12:24,mm:v})).sort((a,b)=>a.t-b.t);}
+function redBars(s){return s.readings.filter(r=>r.mm!=null).map(r=>({t:kT(endKey(r)),h:12,mm:r.mm,ml:r.mL})).sort((a,b)=>a.t-b.t);}
+function stInfo(id){
+  if(id[0]==='r'){const s=DATA.find(d=>d.code===id.slice(2));return {s,red:true,bars:redBars(s),name:s.code};}
+  const s=SEN[+id.slice(2)];return {s,red:false,bars:senBars(s),name:s.name};}
+function partner(info){
+  const s=info.s,B=info.bars; if(s.lat==null||!B.length) return null;
+  const first=B[0].t,last=B[B.length-1].t;
+  if(info.red){
+    const c=SEN.map((o,i)=>({o,i,km:dist(s,o),b:senBars(o)})).filter(x=>x.km<=25&&x.b.length&&x.b[x.b.length-1].t>=last-2*D1&&x.b[0].t<=first+2*D1).sort((a,b)=>a.km-b.km)[0];
+    return c?{km:c.km,label:c.o.name,bars:c.b}:null;}
+  const c=DATA.filter(d=>d.lat!=null&&d.readings.length).map(d=>({d,km:dist(s,d)})).filter(x=>x.km<=25).sort((a,b)=>a.km-b.km)[0];
+  return c?{km:c.km,label:c.d.code,bars:redBars(c.d)}:null;}
+function niceStep(m,n){const raw=m/n,p=10**Math.floor(Math.log10(raw)),f=raw/p;return (f<=1?1:f<=2?2:f<=2.5?2.5:f<=5?5:10)*p;}
+function drawSt(){
+  const sel=document.getElementById('stsel'); if(!sel||!sel.value) return;
+  const info=stInfo(sel.value), s=info.s, B=info.bars;
+  const head=document.getElementById('sthead'), svg=document.getElementById('stchart'), rd=document.getElementById('stread'); svg.innerHTML=''; rd.textContent='';
+  const ap=info.red&&s.loc!=='exacta';
+  const coord=s.lat==null?'Ubicación pendiente':`Lat.: ${dms(s.lat,'N','S')} &nbsp;Long.: ${dms(s.lon,'E','W')}${ap?' (aproximada)':''}`;
+  const tipo=info.red?`Pluviómetro manual${s.D?` · boca de ${fmt(s.D)} cm`:''} · lecturas 07:00 y 19:00`:`${s.kind} · ${s.agency}`;
+  const cod=info.red?s.code:((s.links||[]).map(l=>l.cod).join(' / ')||s.agency);
+  let h=`<div class="st-t">ESTACIÓN: ${info.name.toUpperCase()}</div><div>${info.red?cap(s.place||'Piura')+', Piura':s.place}</div><div>${coord}</div><div>Tipo: ${tipo}</div><div>Código: ${cod}</div>`;
+  if(!B.length){head.innerHTML=h+'<div class="ststats">Aún no hay lecturas.</div>';svg.setAttribute('height',0);document.getElementById('stleg').innerHTML='';return;}
+  const tot=B.reduce((a,b)=>a+b.mm,0), mx=B.reduce((a,b)=>b.mm>a.mm?b:a), wet=B.filter(b=>b.mm>0).length, lb=B[B.length-1];
+  h+=`<div class="ststats"><span><b>${fmt(tot)}</b> mm en total</span><span>mayor lectura: <b>${fmt(mx.mm)}</b> mm (${ddmm(mx.t)}, ${hh(mx.t)})</span><span><b>${wet}</b> de ${B.length} lecturas con lluvia</span><span>última: ${ddmm(lb.t)}, ${hh(lb.t)}</span></div>`;
+  if(info.red&&s.flag) h+=`<div class="pflag" style="display:inline-block;margin-top:4px">${s.flag}</div>`;
+  head.innerHTML=h;
+  const cw=Math.round(svg.parentElement.clientWidth-24)||900, W=Math.max(300,Math.min(1100,cw)), sm=W<600, H=sm?280:360, L0=sm?40:56, R0=sm?42:60, T0=22, B0=sm?50:58;
+  svg.setAttribute('viewBox',`0 0 ${W} ${H}`); svg.setAttribute('height',H);
+  const t0=Math.min(...B.map(b=>b.t-b.h*HR)), t1=Math.max(...B.map(b=>b.t));
+  const X=t=>L0+(t-t0)/((t1-t0)||1)*(W-L0-R0);
+  const y0=Math.max(1,mx.mm), ys=niceStep(y0,4), nd=Math.ceil(y0/ys), ym=ys*nd, Y=v=>H-B0-v/ym*(H-B0-T0);
+  let c=0; const cum=[[t0,0],...B.map(b=>[b.t,c+=b.mm])];
+  const P=partner(info), cb=document.getElementById('stcmp');
+  cb.disabled=!P; document.getElementById('stcmpl').textContent=P?`Comparar con ${P.label} (a ${fmt(P.km)} km)`:'Sin estación vecina para comparar';
+  let pc=null; if(P&&cb.checked){let a=0;pc=[[t0,0]];P.bars.filter(b=>b.t>t0&&b.t<=t1).forEach(b=>pc.push([b.t,a+=b.mm]));}
+  const cs=niceStep(Math.max(1,c,pc?pc[pc.length-1][1]:0),nd), cm=cs*nd, Yc=v=>H-B0-v/cm*(H-B0-T0);
+  const ev=curEv(); if(ev.id!=='total'){const a=Math.max(t0,kT(ev.from)),b=Math.min(t1,kT(ev.to)); if(b>a){el('rect',{x:X(a),y:T0,width:X(b)-X(a),height:H-B0-T0,fill:'var(--off-soft)'},svg);const tx=el('text',{x:(X(a)+X(b))/2,y:T0-7,'text-anchor':'middle',class:'ax'},svg);tx.textContent=ev.name;}}
+  for(let i=0;i<=nd;i++){const v=i*ys;el('line',{x1:L0,x2:W-R0,y1:Y(v),y2:Y(v),stroke:'var(--line)'},svg);
+    const a=el('text',{x:L0-6,y:Y(v)+4,'text-anchor':'end',class:'ax'},svg);a.textContent=+v.toFixed(2);
+    const b=el('text',{x:W-R0+6,y:Y(v)+4,class:'ax'},svg);b.textContent=+(i*cs).toFixed(1);}
+  const yl=el('text',{x:12,y:(T0+H-B0)/2,'text-anchor':'middle',class:'ax',transform:`rotate(-90 12 ${(T0+H-B0)/2})`},svg);yl.textContent='Lluvia por lectura (mm)';
+  const yr=el('text',{x:W-8,y:(T0+H-B0)/2,'text-anchor':'middle',class:'ax',transform:`rotate(90 ${W-8} ${(T0+H-B0)/2})`},svg);yr.textContent='Acumulado (mm)';
+  B.forEach(b=>{const a=X(b.t-b.h*HR),z=X(b.t),w=Math.max(1.5,(z-a)*.78),hgt=b.mm>0?Math.max(1.5,Y(0)-Y(b.mm)):0;
+    el('rect',{x:a+(z-a-w)/2,y:Y(0)-hgt,width:w,height:hgt,rx:1,fill:b.h===24?'var(--rain-soft)':(hh(b.t)==='07:00'?'var(--rain-deep)':'var(--rain)'),stroke:b.h===24?'var(--rain-deep)':'none'},svg);});
+  let miss=0;
+  if(info.red){const have=new Set(B.map(b=>b.t)); for(let t=t0+12*HR;t<=t1;t+=12*HR) if(!have.has(t)){miss++;
+    const r=el('rect',{x:X(t-12*HR)+1,y:Y(0)-5,width:Math.max(1,X(t)-X(t-12*HR)-2),height:5,fill:'var(--warn)',opacity:.5},svg);el('title',{},r).textContent=`${ddmm(t)} ${hh(t)} · sin lectura registrada`;}}
+  const path=pts=>pts.map((p,i)=>(i?'L':'M')+X(p[0]).toFixed(1)+','+Yc(p[1]).toFixed(1)).join('');
+  if(pc&&pc.length>1){el('path',{d:path(pc),fill:'none',stroke:'var(--off)','stroke-width':2,'stroke-dasharray':'6 4'},svg);}
+  el('path',{d:path(cum),fill:'none',stroke:'var(--ink)','stroke-width':2,'stroke-linejoin':'round'},svg);
+  const endLab=(v,col,dy)=>{const tx=el('text',{x:X(t1)-4,y:Yc(v)+dy,'text-anchor':'end',class:'ax',style:`fill:${col};font-weight:600;paint-order:stroke;stroke:var(--surface);stroke-width:4px;stroke-linejoin:round`},svg);tx.textContent=fmt(v)+' mm';};
+  const pv=pc&&pc.length>1?pc[pc.length-1][1]:null; endLab(c,'var(--ink)',pv!=null&&pv>c?16:-7); if(pv!=null) endLab(pv,'var(--off)',pv>c?-7:16);
+  el('line',{x1:L0,x2:W-R0,y1:Y(0),y2:Y(0),stroke:'var(--muted)'},svg);
+  const days=Math.max(1,Math.round((t1-t0)/D1)), step=Math.max(1,Math.ceil(days/((W-L0-R0)/(sm?30:40))));
+  let f=t0; while(hh(f)!=='07:00') f+=12*HR;
+  for(let t=f,i=0;t<=t1;t+=D1,i++){ if(i%step) continue; const x=X(t);
+    el('line',{x1:x,x2:x,y1:Y(0),y2:Y(0)+5,stroke:'var(--muted)'},svg);
+    const tx=el('text',{x:x+3,y:Y(0)+16,'text-anchor':'end',class:'ax',transform:`rotate(-45 ${x+3} ${Y(0)+16})`},svg);tx.textContent=ddmm(t);}
+  B.forEach(b=>{const a=X(b.t-b.h*HR),z=X(b.t); const hit=el('rect',{x:a,y:T0,width:Math.max(1,z-a),height:H-B0-T0,fill:'transparent'},svg);
+    const msg=`${ddmm(b.t-b.h*HR)} ${hh(b.t-b.h*HR)} → ${ddmm(b.t)} ${hh(b.t)} · ${fmt(b.mm,1)} mm${b.ml!=null?` (${fmt(b.ml,0)} mL)`:''}${b.h===24?' · total de 24 h':''}`;
+    el('title',{},hit).textContent=msg; const show=()=>{rd.textContent=msg;}; hit.addEventListener('mouseenter',show); hit.addEventListener('click',show);});
+  const has24=B.some(b=>b.h===24), has12=B.some(b=>b.h===12);
+  document.getElementById('stleg').innerHTML=(has12?'<span><i style="background:var(--rain-deep)"></i>lectura 07:00 (noche)</span><span><i style="background:var(--rain)"></i>lectura 19:00 (día)</span>':'')
+    +(has24?'<span><i style="background:var(--rain-soft);border:1px solid var(--rain-deep)"></i>total de 24 h</span>':'')
+    +(miss?`<span><i style="background:var(--warn);opacity:.5"></i>sin lectura registrada (${miss})</span>`:'')
+    +'<span><i class="ln"></i>acumulado</span>'+(pc&&pc.length>1?`<span><i class="lo"></i>acumulado de ${P.label}</span>`:'')
+    +(ev.id!=='total'?`<span><i style="background:var(--off-soft)"></i>periodo ${ev.name}</span>`:'');
+}
+function csvSt(){const info=stInfo(document.getElementById('stsel').value);
+  const iso=t=>loc(t).toISOString().slice(0,13).replace('T',' ')+':00';
+  const rows=[['inicio','fin','horas','precipitacion_mm',...(info.red?['volumen_mL']:[])].join(',')];
+  info.bars.forEach(b=>rows.push([iso(b.t-b.h*HR),iso(b.t),b.h,b.mm,...(info.red?[b.ml??'']:[])].join(',')));
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['﻿'+rows.join('\n')],{type:'text/csv'}));
+  a.download=(info.red?info.s.code:info.s.name.normalize('NFD').replace(/[^\w]+/g,'_'))+'_lluvia.csv';document.body.appendChild(a);a.click();a.remove();}
+function buildStSel(){
+  const sel=document.getElementById('stsel');
+  const red=DATA.filter(s=>s.readings.length).map(s=>`<option value="r:${s.code}">${s.code} · ${cap(s.place||'Piura')}</option>`).join('');
+  const off=SEN.map((s,i)=>`<option value="s:${i}">${s.name} · ${s.agency==='SENAMHI'?'SENAMHI':'aeropuerto'}</option>`).join('');
+  sel.innerHTML=`<optgroup label="Red de pluviómetros">${red}</optgroup><optgroup label="Estaciones oficiales">${off}</optgroup>`;
+  sel.addEventListener('change',drawSt); document.getElementById('stcmp').addEventListener('change',drawSt);
+  document.getElementById('stcsv').addEventListener('click',csvSt); drawSt();}
+window.showSt=id=>{const sel=document.getElementById('stsel'); sel.value=id; drawSt(); if(MAP) MAP.closePopup(); document.getElementById('t-st').scrollIntoView({behavior:'smooth',block:'start'});};
+
 (document.getElementById('corte')||{}).textContent = "";
 document.getElementById('foot').innerHTML = "Proyecto del curso Concepción Física del Universo (FI 1363), Universidad Nacional de Piura. Fuentes: hoja compartida <b>Red de pluviómetros CFU 2026</b> (lecturas de los alumnos, P = 10·V/A); 49 estaciones meteorológicas del SENAMHI en 32 lugares de la región Piura, automáticas y convencionales (datos públicos de <a href=\"https://www.senamhi.gob.pe/mapas/mapa-estaciones-2/\" target=\"_blank\" rel=\"noopener\">senamhi.gob.pe</a>, sin control de calidad); y estación sinóptica del aeropuerto de Piura (OMM 84401), resumen diario de <a href=\"https://www.ogimet.com/cgi-bin/gsynres?ind=84401&lang=en\" target=\"_blank\" rel=\"noopener\">Ogimet</a>.";
 (document.getElementById('noff')||{}).textContent=`${SEN.length} estaciones oficiales`;
-buildSeg(); initMap(); buildStats(); buildTimeline(); buildScatter(); buildCmp(); buildLiters();
-let rsz; let lastW=innerWidth; addEventListener('resize',()=>{if(Math.abs(innerWidth-lastW)<40) return; lastW=innerWidth; clearTimeout(rsz); rsz=setTimeout(()=>{buildTimeline();buildScatter();},200);});
+buildSeg(); initMap(); buildStSel(); buildStats(); buildTimeline(); buildScatter(); buildCmp(); buildLiters();
+let rsz; let lastW=innerWidth; addEventListener('resize',()=>{if(Math.abs(innerWidth-lastW)<40) return; lastW=innerWidth; clearTimeout(rsz); rsz=setTimeout(()=>{buildTimeline();buildScatter();drawSt();},200);});
 </script>
 
 </body>
